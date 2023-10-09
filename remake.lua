@@ -1,6 +1,6 @@
--- title:   game title
--- author:  game developer, email, etc.
--- desc:    short description
+-- title:   Frogger Remake
+-- author:  Summit Pradhan and Alex Huynh
+-- desc:    remake of the arcade Frogger
 -- site:    website link
 -- license: MIT License (change this to your license of choice)
 -- version: 0.1
@@ -12,10 +12,100 @@ y=24
 CONTROL = {up = 0, down = 1, left = 2, right = 3}
 XSTART = 15 * 8
 YSTART = 15 * 8
+Car1 = {259}
+Car2 = {260}
+Car3 = {261, 262}
+Car4 = {263}
+Car5 = {264}
+COLDEATH = {}
+WATDEATH = {}
+LOG = {390, 391, 392}
+
 
 
 local class = require 'middleclass'
 local Frog = class('Frog')
+local Car = class('Car')
+local Log = class('Log')
+local CarRow = class('CarRow')
+
+-- TODO: Fix math for collision with larger cars
+function collide(frog, car)
+	for i=0,car.length do 
+		local d = (frog.x - (car.x + i))^2 + (frog.y - car.y)^2
+		if d < 64 then return true end
+	end
+	return false
+end
+
+function Log:initialize ()
+	self.sprites = LOG 
+	self.x = 21 * 8
+	self.y = 8 * 8
+	self.v = -.3
+end
+
+function Log:update()
+	self.x = self.x + self.v
+end 
+
+function drawLog(log)
+	local i = 0
+	for index, sprite in pairs(log.sprites) do
+		spr(sprite, log.x + i*8, log.y, 0)
+		i = i + 1
+	end 
+end 
+
+function Car:initialize (x, y, v, sprites)
+	self.sprites = sprites 
+	self.x = x * 8
+	self.length = #sprites
+	self.y = y * 8
+	self.v = v
+end 
+
+function Car:update() 
+	self.x = self.x + self.v
+end
+
+function drawCar(car)
+	local i = 0
+	for index, sprite in pairs(car.sprites) do
+		spr(sprite, car.x + i*8, car.y, 0)
+		i = i + 1
+	end 
+end
+
+function CarRow:initialize (xList, y, v, sprites)
+	local tempCarList = {}
+	for index, x in pairs(xList) do 
+		newCar = Car:new(x, y, v, sprites)
+		table.insert(tempCarList, newCar)
+	end
+	self.cars = tempCarList
+end 
+
+function CarRow:updateCarRow() 
+	for index, car in pairs(self.cars) do 
+		car:update()
+	end 
+end 
+
+function CarRow:drawCarRow()
+	for index, car in pairs(self.cars) do 
+		drawCar(car) 
+	end 
+end 
+
+function CarRow:rowCollision(frog)
+	for index, car in pairs(self.cars) do 
+		if collide(frog, car) then 
+			return true 
+		end 
+	end 
+	return false 
+end 
 
 function Frog:initialize ()
   self.x = XSTART 
@@ -35,12 +125,28 @@ function drawFrog(frog)
 end
 
 frog = Frog:new()
+carRow1 = CarRow:new({15, 23}, 14, -.3, Car3)
+carRow2 = CarRow:new({4, 12}, 13, .4, Car2)
+carRow3 = CarRow:new({4, 12}, 12, .3, Car3)
+log1 = Log:new() 
 
 function TIC()
 	cls(3)
 	map(0, 0, 240, 136, 0, 0)
 	frog:update()
 	drawFrog(frog)
+	carRow1:updateCarRow()
+	carRow1:drawCarRow()
+	carRow2:updateCarRow()
+	carRow2:drawCarRow()
+	carRow3:updateCarRow()
+	carRow3:drawCarRow()
+	log1:update() 
+	drawLog(log1)
+	if carRow1:rowCollision(frog) then 
+		trace("You Lost!")
+		exit() 
+	end 
 end
 
 -- <TILES>
