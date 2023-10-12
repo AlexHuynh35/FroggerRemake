@@ -12,6 +12,11 @@ y=24
 CONTROL = {up = 0, down = 1, left = 2, right = 3}
 XSTART = 15 * 8
 YSTART = 15 * 8
+LEFTBOUND = 48
+RIGHTBOUND = 184
+OFFSCREENLEFT = 0
+OFFSCREENRIGHT = 232
+
 Car1 = {259}
 Car2 = {260}
 Car3 = {261, 262}
@@ -20,6 +25,8 @@ Car5 = {264}
 COLDEATH = {}
 WATDEATH = {}
 LOG = {390, 391, 392}
+TURTLE = {338, 339, 340}
+TURTLEDIVE = {336, 337}
 
 
 
@@ -27,6 +34,7 @@ local class = require 'middleclass'
 local Frog = class('Frog')
 local Car = class('Car')
 local Log = class('Log')
+local Turtle = class('Turtle')
 local CarRow = class('CarRow')
 
 -- TODO: Fix math for collision with larger cars
@@ -45,8 +53,13 @@ function Log:initialize ()
 	self.v = -.3
 end
 
+function Turtle:initialize ()
+end
+
 function Log:update()
 	self.x = self.x + self.v
+	if self.x < OFFSCREENLEFT then self.x = OFFSCREENRIGHT end 
+	if self.x > OFFSCREENRIGHT then self.x = OFFSCREENLEFT end 
 end 
 
 function drawLog(log)
@@ -67,6 +80,8 @@ end
 
 function Car:update() 
 	self.x = self.x + self.v
+	if self.x < OFFSCREENLEFT then self.x = OFFSCREENRIGHT end 
+	if self.x > OFFSCREENRIGHT then self.x = OFFSCREENLEFT end 
 end
 
 function drawCar(car)
@@ -114,8 +129,8 @@ function Frog:initialize ()
 end
 
 function Frog:update() 
-	if btnp(CONTROL.left) then self.x=self.x-8 end
-	if btnp(CONTROL.right) then self.x=self.x+8 end
+	if (btnp(CONTROL.left) and self.x > LEFTBOUND) then self.x=self.x-8 end
+	if (btnp(CONTROL.right) and self.x < RIGHTBOUND)then self.x=self.x+8 end
 	if btnp(CONTROL.up) then self.y=self.y-8 end
 	if btnp(CONTROL.down) then  self.y=self.y+8 end
 end
@@ -125,9 +140,13 @@ function drawFrog(frog)
 end
 
 frog = Frog:new()
-carRow1 = CarRow:new({15, 23}, 14, -.3, Car3)
+--TODO: Fix number of cars and car positioning 
+carRow1 = CarRow:new({15, 23}, 14, -.3, Car1)
 carRow2 = CarRow:new({4, 12}, 13, .4, Car2)
-carRow3 = CarRow:new({4, 12}, 12, .3, Car3)
+carRow3 = CarRow:new({6, 11}, 12, .5, Car3)
+carRow4 = CarRow:new({1, 7, 15}, 11, -.4, Car4)
+carRow5 = CarRow:new({4, 12}, 10, .3, Car5)
+carRows = {carRow1, carRow2, carRow3, carRow4, carRow5}
 log1 = Log:new() 
 
 function TIC()
@@ -135,18 +154,16 @@ function TIC()
 	map(0, 0, 240, 136, 0, 0)
 	frog:update()
 	drawFrog(frog)
-	carRow1:updateCarRow()
-	carRow1:drawCarRow()
-	carRow2:updateCarRow()
-	carRow2:drawCarRow()
-	carRow3:updateCarRow()
-	carRow3:drawCarRow()
+	for i, carRow in pairs(carRows) do carRow:updateCarRow() end 
+	for i, carRow in pairs(carRows) do carRow:drawCarRow() end
 	log1:update() 
 	drawLog(log1)
-	if carRow1:rowCollision(frog) then 
-		trace("You Lost!")
-		exit() 
-	end 
+	for i, carRow in pairs(carRows) do 
+		if carRow:rowCollision(frog) then 
+			trace("You Lost!")
+			exit() 
+		end
+	end
 end
 
 -- <TILES>
