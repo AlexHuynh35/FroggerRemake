@@ -17,6 +17,7 @@ RIGHTBOUND = 184
 OFFSCREENLEFT = 0
 OFFSCREENRIGHT = 232
 
+FROG = {256, 257, 258}
 Car1 = {259}
 Car2 = {260}
 Car3 = {261, 262}
@@ -36,6 +37,20 @@ local Car = class('Car')
 local Log = class('Log')
 local Turtle = class('Turtle')
 local CarRow = class('CarRow')
+local Animate = class('Animate')
+
+function initPlayfield()
+	for i=0,5 do
+		for j=0,16 do
+			spr(511, i*8, j*8, 15)
+		end
+	end
+	for i=24,29 do
+		for j=0,16 do
+			spr(511, i*8, j*8, 15)
+		end
+	end
+end
 
 -- TODO: Fix math for collision with larger cars
 function collide(frog, car)
@@ -125,45 +140,104 @@ end
 function Frog:initialize ()
   self.x = XSTART 
   self.y = YSTART
-  self.jumpTimer = 60
+  self.framesPerStep = 5
+  self.movementTimer = 4 * self.framesPerStep
+  self.moving = false
+  self.direction = 0
+  self.animateJump = Animate:new (self.framesPerStep, {FROG[1], FROG[2], FROG[3], FROG[2], FROG[1]})
 end
 
 function Frog:update() 
-	if (btnp(CONTROL.left) and self.x > LEFTBOUND) then self.x=self.x-8 end
-	if (btnp(CONTROL.right) and self.x < RIGHTBOUND)then self.x=self.x+8 end
-	if btnp(CONTROL.up) then self.y=self.y-8 end
-	if btnp(CONTROL.down) then  self.y=self.y+8 end
+	if self.moving then
+		self.animateJump:play()
+		if (self.direction == 3 and self.x > LEFTBOUND and self.movementTimer%self.framesPerStep == 0) then 
+			self.x=self.x-2
+		end
+		if (self.direction == 1 and self.x < RIGHTBOUND and self.movementTimer%self.framesPerStep == 0) then
+			self.x=self.x+2
+		end
+		if (self.direction == 0 and self.movementTimer%self.framesPerStep == 0) then 
+			self.y=self.y-2
+		end
+		if (self.direction == 2 and self.movementTimer%self.framesPerStep == 0) then 
+			self.y=self.y+2
+		end
+		self.movementTimer = self.movementTimer - 1
+		if self.movementTimer == 0 then
+			self.movementTimer = 4 * self.framesPerStep
+			self.moving = false
+		end
+	else
+		if btnp(CONTROL.left) then
+			self.moving = true
+			self.direction = 3
+		end
+		if btnp(CONTROL.right) then
+			self.moving = true
+			self.direction = 1
+		end
+		if btnp(CONTROL.up) then
+			self.moving = true
+			self.direction = 0
+		end
+		if btnp(CONTROL.down) then
+			self.moving = true
+			self.direction = 2
+		end
+	end
 end
 
 function drawFrog(frog)
-	spr(256, frog.x, frog.y, 0)
+	spr(frog.animateJump.sprites[frog.animateJump.currentSpr], frog.x, frog.y, 0, 1, 0, frog.direction)
 end
+
+function Animate:initialize (frames, sprList)
+	self.framesPerAni = frames
+	self.counter = self.framesPerAni * (#sprList - 1)
+	self.currentSpr = 1
+	self.sprites = sprList
+end
+
+function Animate:play ()
+	if self.counter%self.framesPerAni==0 then
+		self.currentSpr = self.currentSpr+1
+	end
+	self.counter = self.counter-1
+	if self.counter == 0 then
+		self.counter = self.framesPerAni * (#self.sprites - 1)
+		self.currentSpr = 1
+	end
+end
+
 
 frog = Frog:new()
 --TODO: Fix number of cars and car positioning 
-carRow1 = CarRow:new({15, 23}, 14, -.3, Car1)
-carRow2 = CarRow:new({4, 12}, 13, .4, Car2)
-carRow3 = CarRow:new({6, 11}, 12, .5, Car3)
+carRow1 = CarRow:new({15, 23}, 14, .3, Car1)
+carRow2 = CarRow:new({4, 12}, 13, -.4, Car2)
+carRow3 = CarRow:new({6, 11}, 12, .5, Car5)
 carRow4 = CarRow:new({1, 7, 15}, 11, -.4, Car4)
-carRow5 = CarRow:new({4, 12}, 10, .3, Car5)
+carRow5 = CarRow:new({4, 12}, 10, .3, Car3)
 carRows = {carRow1, carRow2, carRow3, carRow4, carRow5}
 log1 = Log:new() 
+animateColDeath = Animate:new (10, COLDEATH)
+animateWatDeath = Animate:new (10, WATDEATH)
 
 function TIC()
 	cls(3)
 	map(0, 0, 240, 136, 0, 0)
+	drawLog(log1)
 	frog:update()
 	drawFrog(frog)
 	for i, carRow in pairs(carRows) do carRow:updateCarRow() end 
 	for i, carRow in pairs(carRows) do carRow:drawCarRow() end
-	log1:update() 
-	drawLog(log1)
+	log1:update()
 	for i, carRow in pairs(carRows) do 
 		if carRow:rowCollision(frog) then 
 			trace("You Lost!")
 			exit() 
 		end
 	end
+	initPlayfield()
 end
 
 -- <TILES>
