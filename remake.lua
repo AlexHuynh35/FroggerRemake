@@ -12,10 +12,10 @@ y=24
 CONTROL = {up = 0, down = 1, left = 2, right = 3}
 XSTART = 15 * 8
 YSTART = 15 * 8
-LEFTBOUND = 48
-RIGHTBOUND = 184
-OFFSCREENLEFT = 0
-OFFSCREENRIGHT = 232
+LEFTBOUND = 6 * 8
+RIGHTBOUND = 23 * 8
+OFFSCREENLEFT = 32
+OFFSCREENRIGHT = 192
 
 FROG = {256, 257, 258}
 Car1 = {259}
@@ -23,13 +23,11 @@ Car2 = {260}
 Car3 = {261, 262}
 Car4 = {263}
 Car5 = {264}
-COLDEATH = {}
-WATDEATH = {}
+COLDEATH = {320, 321, 322, 304}
+WATDEATH = {305, 306, 307, 304}
 LOG = {390, 391, 392}
 TURTLE = {338, 339, 340}
 TURTLEDIVE = {336, 337}
-
-
 
 local class = require 'middleclass'
 local Frog = class('Frog')
@@ -140,7 +138,7 @@ end
 function Frog:initialize ()
   self.x = XSTART 
   self.y = YSTART
-  self.framesPerStep = 5
+  self.framesPerStep = 2
   self.movementTimer = 4 * self.framesPerStep
   self.moving = false
   self.direction = 0
@@ -211,16 +209,15 @@ end
 
 
 frog = Frog:new()
---TODO: Fix number of cars and car positioning 
-carRow1 = CarRow:new({15, 23}, 14, .3, Car1)
-carRow2 = CarRow:new({4, 12}, 13, -.4, Car2)
-carRow3 = CarRow:new({6, 11}, 12, .5, Car5)
-carRow4 = CarRow:new({1, 7, 15}, 11, -.4, Car4)
-carRow5 = CarRow:new({4, 12}, 10, .3, Car3)
+animateColDeath = Animate:new (5, COLDEATH)
+animateWatDeath = Animate:new (5, WATDEATH)
+carRow1 = CarRow:new({7, 12.5, 15, 20.5}, 14, -.4, Car1)
+carRow2 = CarRow:new({10, 17, 24}, 13, .4, Car2)
+carRow3 = CarRow:new({7, 12.5, 15, 20.5}, 12, -.4, Car4)
+carRow4 = CarRow:new({8.5, 12}, 11, .8, Car5)
+carRow5 = CarRow:new({8, 15, 22}, 10, -.3, Car3)
 carRows = {carRow1, carRow2, carRow3, carRow4, carRow5}
-log1 = Log:new() 
-animateColDeath = Animate:new (10, COLDEATH)
-animateWatDeath = Animate:new (10, WATDEATH)
+log1 = Log:new()
 
 function TIC()
 	cls(3)
