@@ -31,13 +31,16 @@ TURTLEDIVE = {336, 337}
 
 local class = require 'middleclass'
 local Frog = class('Frog')
+local Animate = class('Animate')
 local Car = class('Car')
 local Log = class('Log')
 local Turtle = class('Turtle')
+local RowFunc = class('RowFunc')
 local CarRow = class('CarRow')
-local Animate = class('Animate')
+local LogRow = class('CarRow')
+local TurtleRow = class('CarRow')
 
-function initPlayfield()
+function initBorder ()
 	for i=0,5 do
 		for j=0,16 do
 			spr(511, i*8, j*8, 15)
@@ -50,57 +53,167 @@ function initPlayfield()
 	end
 end
 
--- TODO: Fix math for collision with larger cars
-function collide(frog, car)
-	for i=0,car.length do 
-		local d = (frog.x - (car.x + i))^2 + (frog.y - car.y)^2
+function concatTable(t1, t2)
+    for i = 1, #t2 do
+        table.insert(t1, t2[i])
+    end
+    return t1
+end
+
+function collide (frog, object)
+	for i = 0, object.length - 1 do 
+		local d = (frog.x - (object.x + i*8))^2 + (frog.realY - object.y)^2
 		if d < 64 then return true end
 	end
 	return false
 end
 
-function Log:initialize ()
-	self.sprites = LOG 
-	self.x = 21 * 8
-	self.y = 8 * 8
-	self.v = -.3
+function RowFunc:initialize ()
+
 end
 
-function Turtle:initialize ()
-end
-
-function Log:update()
-	self.x = self.x + self.v
-	if self.x < OFFSCREENLEFT then self.x = OFFSCREENRIGHT end 
-	if self.x > OFFSCREENRIGHT then self.x = OFFSCREENLEFT end 
-end 
-
-function drawLog(log)
-	local i = 0
-	for index, sprite in pairs(log.sprites) do
-		spr(sprite, log.x + i*8, log.y, 0)
-		i = i + 1
+function RowFunc:updateObjectRow (objectList) 
+	for index, object in pairs(objectList) do 
+		object:update()
 	end 
 end 
 
-function Car:initialize (x, y, v, sprites)
-	self.sprites = sprites 
-	self.x = x * 8
-	self.length = #sprites
-	self.y = y * 8
-	self.v = v
+function RowFunc:drawObjectRow (objectList)
+	for index, object in pairs(objectList) do 
+		object:draw() 
+	end 
 end 
 
-function Car:update() 
+function RowFunc:rowCollision (frog, objectList)
+	for index, object in pairs(objectList) do 
+		if collide(frog, object) then 
+			return true 
+		end 
+	end 
+	return false 
+end
+
+function Log:initialize (x, y, v, length) 
+	self.x = x * 8
+	self.y = y * 8
+	self.v = v
+	self.length = length
+	self.sprites = self:fillSprList()
+end
+
+function Log:update ()
+	self.x = self.x + self.v
+	if self.x < OFFSCREENLEFT - self.length then self.x = OFFSCREENRIGHT end 
+	if self.x > OFFSCREENRIGHT then self.x = OFFSCREENLEFT - self.length end 
+end 
+
+function Log:fillSprList ()
+	local sprList = {}
+	table.insert(sprList, LOG[1])
+	for i = 2, self.length - 1 do
+		table.insert(sprList, LOG[2])
+	end
+	table.insert(sprList, LOG[3])
+	return sprList
+end
+
+function Log:draw ()
+	local i = 0
+	for index, sprite in pairs(self.sprites) do
+		spr(sprite, self.x + i*8, self.y, 0)
+		i = i + 1
+	end
+end 
+
+function LogRow:initialize (xList, y, v, length)
+	local tempObjList = {}
+	local newObj
+	for index, x in pairs(xList) do 
+		newObj = Log:new(x, y, v, length)
+		table.insert(tempObjList, newObj)
+	end
+	self.waterObjs = tempObjList
+	self.y = y * 8
+	self.v = v
+end
+
+function Turtle:initialize (x, y, v, length) 
+	self.x = x * 8
+	self.y = y * 8
+	self.v = v
+	self.length = length
+	self.swimSpr = concatTable({TURTLE[1]}, TURTLE)
+	self.diveSpr = {TURTLE[1], TURTLEDIVE[2], TURTLEDIVE[1], TURTLEDIVE[2], TURTLE[1]}
+	self.currentSprNum = 1
+	self.currentSprs = self.swimSpr
+	self.framesPerDive = 600
+	self.diving = false
+	self.animateSwim = Animate:new (5, self.swimSpr)
+	self.animateDive = Animate:new (60, self.diveSpr)
+end
+
+function Turtle:update ()
+	self.x = self.x + self.v
+	if self.x < OFFSCREENLEFT - self.length then self.x = OFFSCREENRIGHT end 
+	if self.x > OFFSCREENRIGHT then self.x = OFFSCREENLEFT - self.length end 
+	if not self.diving then
+		self.framesPerDive = self.framesPerDive - 1
+		self.animateSwim:play()
+		self.currentSprNum = self.animateSwim.currentSpr
+		if self.framesPerDive == 0 then 
+			self.diving = true
+			self.currentSprNum = 1
+			self.currentSprs = self.diveSpr
+		end
+	else
+		self.animateDive:play()
+		self.currentSprNum = self.animateDive.currentSpr
+		if self.animateDive.counter == self.animateDive.framesPerAni * (#self.animateDive.sprites - 1) then
+			self.diving = false
+			self.framesPerDive = 600
+			self.currentSprNum = 1
+			self.currentSprs = self.swimSpr
+		end
+	end
+end 
+
+function Turtle:draw ()
+	for i = 0, self.length - 1 do
+		spr(self.currentSprs[self.currentSprNum], self.x + i*8, self.y, 0)
+		i = i + 1
+	end
+end 
+
+function TurtleRow:initialize (xList, y, v, length)
+	local tempObjList = {}
+	local newObj
+	for index, x in pairs(xList) do 
+		newObj = Turtle:new(x, y, v, length)
+		table.insert(tempObjList, newObj)
+	end
+	self.waterObjs = tempObjList
+	self.y = y * 8
+	self.v = v
+end
+
+function Car:initialize (x, y, v, sprites)
+	self.x = x * 8
+	self.y = y * 8
+	self.v = v
+	self.sprites = sprites
+	self.length = #sprites
+end 
+
+function Car:update () 
 	self.x = self.x + self.v
 	if self.x < OFFSCREENLEFT then self.x = OFFSCREENRIGHT end 
 	if self.x > OFFSCREENRIGHT then self.x = OFFSCREENLEFT end 
 end
 
-function drawCar(car)
+function Car:draw ()
 	local i = 0
-	for index, sprite in pairs(car.sprites) do
-		spr(sprite, car.x + i*8, car.y, 0)
+	for index, sprite in pairs(self.sprites) do
+		spr(sprite, self.x + i*8, self.y, 0)
 		i = i + 1
 	end 
 end
@@ -112,40 +225,21 @@ function CarRow:initialize (xList, y, v, sprites)
 		table.insert(tempCarList, newCar)
 	end
 	self.cars = tempCarList
-end 
-
-function CarRow:updateCarRow() 
-	for index, car in pairs(self.cars) do 
-		car:update()
-	end 
-end 
-
-function CarRow:drawCarRow()
-	for index, car in pairs(self.cars) do 
-		drawCar(car) 
-	end 
-end 
-
-function CarRow:rowCollision(frog)
-	for index, car in pairs(self.cars) do 
-		if collide(frog, car) then 
-			return true 
-		end 
-	end 
-	return false 
+	self.y = y * 8
 end 
 
 function Frog:initialize ()
-  self.x = XSTART 
-  self.y = YSTART
-  self.framesPerStep = 2
-  self.movementTimer = 4 * self.framesPerStep
-  self.moving = false
-  self.direction = 0
-  self.animateJump = Animate:new (self.framesPerStep, {FROG[1], FROG[2], FROG[3], FROG[2], FROG[1]})
+	self.x = XSTART 
+	self.y = YSTART
+	self.realY = YSTART
+	self.framesPerStep = 2
+	self.movementTimer = 4 * self.framesPerStep
+	self.moving = false
+	self.direction = 0
+	self.animateJump = Animate:new (self.framesPerStep, {FROG[1], FROG[2], FROG[3], FROG[2], FROG[1]})
 end
 
-function Frog:update() 
+function Frog:update () 
 	if self.moving then
 		self.animateJump:play()
 		if (self.direction == 3 and self.x > LEFTBOUND and self.movementTimer%self.framesPerStep == 0) then 
@@ -177,16 +271,26 @@ function Frog:update()
 		if btnp(CONTROL.up) then
 			self.moving = true
 			self.direction = 0
+			self.realY = self.realY - 8
 		end
 		if btnp(CONTROL.down) then
 			self.moving = true
 			self.direction = 2
+			self.realY = self.realY + 8
 		end
 	end
 end
 
-function drawFrog(frog)
-	spr(frog.animateJump.sprites[frog.animateJump.currentSpr], frog.x, frog.y, 0, 1, 0, frog.direction)
+function Frog:drawFrog ()
+	spr(self.animateJump.sprites[self.animateJump.currentSpr], self.x, self.y, 0, 1, 0, self.direction)
+end
+
+function Frog:reset ()
+	self.x = XSTART 
+  	self.y = YSTART
+  	self.realY = YSTART
+	self.moving = false
+	self.direction = 0
 end
 
 function Animate:initialize (frames, sprList)
@@ -197,8 +301,8 @@ function Animate:initialize (frames, sprList)
 end
 
 function Animate:play ()
-	if self.counter%self.framesPerAni==0 then
-		self.currentSpr = self.currentSpr+1
+	if self.counter%self.framesPerAni == 0 then
+		self.currentSpr = self.currentSpr + 1
 	end
 	self.counter = self.counter-1
 	if self.counter == 0 then
@@ -207,34 +311,68 @@ function Animate:play ()
 	end
 end
 
-
-frog = Frog:new()
-animateColDeath = Animate:new (5, COLDEATH)
-animateWatDeath = Animate:new (5, WATDEATH)
-carRow1 = CarRow:new({7, 12.5, 15, 20.5}, 14, -.4, Car1)
-carRow2 = CarRow:new({10, 17, 24}, 13, .4, Car2)
-carRow3 = CarRow:new({7, 12.5, 15, 20.5}, 12, -.4, Car4)
-carRow4 = CarRow:new({8.5, 12}, 11, .8, Car5)
-carRow5 = CarRow:new({8, 15, 22}, 10, -.3, Car3)
+colDeath = false
+watDeath = false
+frogLastLoc = {}
+frog = Frog:new ()
+rowFunc = RowFunc:new ()
+animateColDeath = Animate:new (20, concatTable({COLDEATH[1]}, COLDEATH))
+animateWatDeath = Animate:new (20, concatTable({WATDEATH[1]}, WATDEATH))
+carRow1 = CarRow:new ({7, 12.5, 15, 20.5}, 14, -.4, Car1)
+carRow2 = CarRow:new ({10, 17, 24}, 13, .4, Car2)
+carRow3 = CarRow:new ({7, 12.5, 15, 20.5}, 12, -.4, Car4)
+carRow4 = CarRow:new ({8.5, 12}, 11, .8, Car5)
+carRow5 = CarRow:new ({8, 15, 22}, 10, -.3, Car3)
 carRows = {carRow1, carRow2, carRow3, carRow4, carRow5}
-log1 = Log:new()
+turtleRow1 = TurtleRow:new ({6, 11, 16, 21}, 8, -.5, 3)
+logRow2 = LogRow:new ({6, 11, 16, 21}, 7, .3, 3)
+logRow3 = LogRow:new ({6, 16}, 6, .6, 6)
+turtleRow4 = TurtleRow:new ({6, 10, 14, 18, 22}, 5, -.5, 2)
+logRow5 = LogRow:new ({6, 12, 18}, 4, .4, 4)
+waterRows = {turtleRow1, logRow2, logRow3, turtleRow4, logRow5}
 
 function TIC()
 	cls(3)
 	map(0, 0, 240, 136, 0, 0)
-	drawLog(log1)
-	frog:update()
-	drawFrog(frog)
-	for i, carRow in pairs(carRows) do carRow:updateCarRow() end 
-	for i, carRow in pairs(carRows) do carRow:drawCarRow() end
-	log1:update()
-	for i, carRow in pairs(carRows) do 
-		if carRow:rowCollision(frog) then 
-			trace("You Lost!")
-			exit() 
+	if colDeath then
+		animateColDeath:play()
+		spr(animateColDeath.sprites[animateColDeath.currentSpr], frogLastLoc[1], frogLastLoc[2], 0)
+		if animateColDeath.counter == animateColDeath.framesPerAni * (#animateColDeath.sprites - 1) then
+			colDeath = false
 		end
 	end
-	initPlayfield()
+	if watDeath then
+		animateWatDeath:play()
+		spr(animateWatDeath.sprites[animateWatDeath.currentSpr], frogLastLoc[1], frogLastLoc[2], 0)
+		if animateWatDeath.counter == animateWatDeath.framesPerAni * (#animateWatDeath.sprites - 1) then
+			watDeath = false
+		end
+	end
+	if not colDeath and not watDeath then frog:update() end
+	for i = 1, 5 do 
+		rowFunc:updateObjectRow(carRows[i].cars)
+		rowFunc:updateObjectRow(waterRows[i].waterObjs)
+	end 
+	for i = 1, 5 do 
+		rowFunc:drawObjectRow(carRows[i].cars)
+		rowFunc:drawObjectRow(waterRows[i].waterObjs) 
+	end
+	if not colDeath and not watDeath then frog:drawFrog() end
+	for i = 1, 5 do 
+		if rowFunc:rowCollision(frog, carRows[i].cars) then 
+			colDeath = true
+			frogLastLoc = {frog.x, frog.y}
+			frog:reset()
+		end
+		if (not rowFunc:rowCollision(frog, waterRows[i].waterObjs)) and frog.realY == waterRows[i].y then 
+			watDeath = true
+			frogLastLoc = {frog.x, frog.y}
+			frog:reset()
+		elseif rowFunc:rowCollision(frog, waterRows[i].waterObjs) then
+			frog.x = frog.x + waterRows[i].v
+		end
+	end
+	initBorder()
 end
 
 -- <TILES>
