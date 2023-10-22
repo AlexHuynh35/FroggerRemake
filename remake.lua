@@ -28,6 +28,7 @@ WATDEATH = {305, 306, 307, 304}
 LOG = {390, 391, 392}
 TURTLE = {338, 339, 340}
 TURTLEDIVE = {336, 337}
+GOAL = {353, 354}
 
 local class = require 'middleclass'
 local Frog = require 'classes/frog'
@@ -35,10 +36,14 @@ local Animate = require 'classes/animate'
 local Car = require 'classes/car'
 local Log = require 'classes/log'
 local Turtle = require 'classes/turtle'
+local Goal = require 'classes/goal'
 local RowFunc = require 'classes/rowFunc'
 local CarRow = require 'classes/carRow'
 local LogRow = require 'classes/logRow'
 local TurtleRow = require 'classes/turtleRow'
+local GoalRow = require 'classes/goalRow'
+
+local NOCOLLISIONS = false 
 
 function initBorder ()
 	for i=0,5 do
@@ -87,6 +92,8 @@ logRow3 = LogRow:new ({6, 16}, 6, .6, 6)
 turtleRow4 = TurtleRow:new ({6, 10, 14, 18, 22}, 5, -.5, 2)
 logRow5 = LogRow:new ({6, 12, 18}, 4, .4, 4)
 waterRows = {turtleRow1, logRow2, logRow3, turtleRow4, logRow5}
+goalRow = GoalRow:new ({56, 88, 120, 152, 176}, 24)
+goalsCompleted = 0
 
 function TIC()
 	cls(3)
@@ -115,20 +122,31 @@ function TIC()
 		rowFunc:drawObjectRow(waterRows[i].waterObjs) 
 	end
 	if not colDeath and not watDeath then frog:drawFrog() end
-	for i = 1, 5 do 
-		if rowFunc:rowCollision(frog, carRows[i].cars) then 
-			colDeath = true
-			frogLastLoc = {frog.x, frog.y}
-			frog:reset()
+	if not NOCOLLISIONS then 
+		for i = 1, 5 do 
+			if rowFunc:rowCollision(frog, carRows[i].cars) then 
+				colDeath = true
+				frogLastLoc = {frog.x, frog.y}
+				frog:reset()
+			end
+			if (not rowFunc:rowCollision(frog, waterRows[i].waterObjs)) and frog.realY == waterRows[i].y then 
+				watDeath = true
+				frogLastLoc = {frog.x, frog.y}
+				frog:reset()
+			elseif rowFunc:rowCollision(frog, waterRows[i].waterObjs) then
+				frog.x = frog.x + waterRows[i].v
+			end
 		end
-		if (not rowFunc:rowCollision(frog, waterRows[i].waterObjs)) and frog.realY == waterRows[i].y then 
-			watDeath = true
-			frogLastLoc = {frog.x, frog.y}
-			frog:reset()
-		elseif rowFunc:rowCollision(frog, waterRows[i].waterObjs) then
-			frog.x = frog.x + waterRows[i].v
-		end
-	end
+	end 
+	if goalRow:checkReached(frog) then 
+		goalsCompleted = goalsCompleted + 1
+	elseif frog.y <= 24 then 
+		watDeath = true 
+		frogLastLoc = {frog.x, frog.y}
+		frog:reset()
+	end 
+	rowFunc:drawObjectRow(goalRow.goalObjs)
+	if goalsCompleted == 5 then goalRow:reset() end 
 	initBorder()
 end
 
