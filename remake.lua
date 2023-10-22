@@ -44,7 +44,7 @@ local TurtleRow = require 'classes/turtleRow'
 local GoalRow = require 'classes/goalRow'
 
 --debug variables
-local NOCOLLISIONS = true 
+local NOCOLLISIONS = false
 
 function initBorder ()
 	for i=0,5 do
@@ -142,8 +142,8 @@ function TIC()
 	end 
 	if goalRow:checkReached(frog) then 
 		goalsCompleted = goalsCompleted + 1
-	elseif frog.y <= 24 then 
-		watDeath = true 
+	elseif frog.realY <= 24 then 
+		colDeath = true 
 		frogLastLoc = {frog.x, frog.y}
 		frog:reset()
 	end 
@@ -154,7 +154,7 @@ function TIC()
 		goalsCompleted = 0
 	end 
 	initBorder()
-	print("LEVEL: " .. tostring(level), 6 * 8, 16 * 8, 12)
+	print("LEVEL: " .. tostring(level), 6 * 8, 1 * 8, 12)
 end
 
 -- <TILES>
