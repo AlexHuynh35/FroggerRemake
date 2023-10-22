@@ -43,7 +43,8 @@ local LogRow = require 'classes/logRow'
 local TurtleRow = require 'classes/turtleRow'
 local GoalRow = require 'classes/goalRow'
 
-local NOCOLLISIONS = false 
+--debug variables
+local NOCOLLISIONS = true 
 
 function initBorder ()
 	for i=0,5 do
@@ -94,6 +95,7 @@ logRow5 = LogRow:new ({6, 12, 18}, 4, .4, 4)
 waterRows = {turtleRow1, logRow2, logRow3, turtleRow4, logRow5}
 goalRow = GoalRow:new ({56, 88, 120, 152, 176}, 24)
 goalsCompleted = 0
+level = 1
 
 function TIC()
 	cls(3)
@@ -146,8 +148,13 @@ function TIC()
 		frog:reset()
 	end 
 	rowFunc:drawObjectRow(goalRow.goalObjs)
-	if goalsCompleted == 5 then goalRow:reset() end 
+	if goalsCompleted == 5 then 
+		level = level + 1
+		goalRow:reset() 
+		goalsCompleted = 0
+	end 
 	initBorder()
+	print("LEVEL: " .. tostring(level), 6 * 8, 16 * 8, 12)
 end
 
 -- <TILES>

@@ -10,6 +10,7 @@ function Goal:initialize (x, y)
 end
 
 function Goal:checkReached(frog)
+    if self.completed then return false end
     tempObj = {x = self.x, y = self.y, length = self.length}
     if collide(frog, tempObj) then 
 		self.completed = true
