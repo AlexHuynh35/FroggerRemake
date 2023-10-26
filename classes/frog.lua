@@ -13,6 +13,7 @@ function Frog:initialize ()
 	self.animateJump = Animate:new (self.framesPerStep, {FROG[1], FROG[2], FROG[3], FROG[2], FROG[1]})
 end
 
+-- returns whether frog jumped up
 function Frog:update () 
 	if self.moving then
 		self.animateJump:play()
@@ -46,6 +47,7 @@ function Frog:update ()
 			self.moving = true
 			self.direction = 0
 			self.realY = self.realY - 8
+			return true 
 		end
 		if btnp(CONTROL.down) then
 			self.moving = true
@@ -53,6 +55,7 @@ function Frog:update ()
 			self.realY = self.realY + 8
 		end
 	end
+	return false 
 end
 
 function Frog:drawFrog ()
