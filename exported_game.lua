@@ -1,7 +1,18 @@
 do
 local _ENV = _ENV
 package.preload[ "remake-spradha1-vhuynh1/classes/animate" ] = function( ... ) local arg = _G.arg;
-local class = require 'middleclass'
+	local class = middleclass.class
+	local Frog = Frog.class
+	local Animate = Animate.class
+	local Car = Car.class
+	local Log = Log.class
+	local Turtle = Turtle.class
+	local Goal = Goal.class
+	local RowFunc = RowFunc.class
+	local CarRow = CarRow.class
+	local LogRow = LogRow.class
+	local TurtleRow = Turtle.class
+	local GoalRow = GoalRow.class
 local Animate = class('Animate')
 
 function Animate:initialize (frames, sprList)
@@ -29,7 +40,18 @@ end
 do
 local _ENV = _ENV
 package.preload[ "remake-spradha1-vhuynh1/classes/car" ] = function( ... ) local arg = _G.arg;
-local class = require 'middleclass'
+	local class = middleclass.class
+	local Frog = Frog.class
+	local Animate = Animate.class
+	local Car = Car.class
+	local Log = Log.class
+	local Turtle = Turtle.class
+	local Goal = Goal.class
+	local RowFunc = RowFunc.class
+	local CarRow = CarRow.class
+	local LogRow = LogRow.class
+	local TurtleRow = Turtle.class
+	local GoalRow = GoalRow.class
 local Car = class('Car')
 
 function Car:initialize (x, y, v, sprites)
@@ -61,8 +83,18 @@ end
 do
 local _ENV = _ENV
 package.preload[ "remake-spradha1-vhuynh1/classes/carRow" ] = function( ... ) local arg = _G.arg;
-local class = require 'middleclass'
-local Car = require 'classes/car'
+	local class = middleclass.class
+	local Frog = Frog.class
+	local Animate = Animate.class
+	local Car = Car.class
+	local Log = Log.class
+	local Turtle = Turtle.class
+	local Goal = Goal.class
+	local RowFunc = RowFunc.class
+	local CarRow = CarRow.class
+	local LogRow = LogRow.class
+	local TurtleRow = Turtle.class
+	local GoalRow = GoalRow.class
 local CarRow = class('CarRow')
 
 function CarRow:initialize (xList, y, v, sprites)
@@ -82,8 +114,18 @@ end
 do
 local _ENV = _ENV
 package.preload[ "remake-spradha1-vhuynh1/classes/frog" ] = function( ... ) local arg = _G.arg;
-local class = require 'middleclass'
-local Animate = require 'classes/animate'
+	local class = middleclass.class
+	local Frog = Frog.class
+	local Animate = Animate.class
+	local Car = Car.class
+	local Log = Log.class
+	local Turtle = Turtle.class
+	local Goal = Goal.class
+	local RowFunc = RowFunc.class
+	local CarRow = CarRow.class
+	local LogRow = LogRow.class
+	local TurtleRow = Turtle.class
+	local GoalRow = GoalRow.class
 local Frog = class('Frog')
 
 function Frog:initialize ()
@@ -161,8 +203,18 @@ end
 do
 local _ENV = _ENV
 package.preload[ "remake-spradha1-vhuynh1/classes/goal" ] = function( ... ) local arg = _G.arg;
-local class = require 'middleclass'
-local Frog = require 'classes/frog'
+	local class = middleclass.class
+	local Frog = Frog.class
+	local Animate = Animate.class
+	local Car = Car.class
+	local Log = Log.class
+	local Turtle = Turtle.class
+	local Goal = Goal.class
+	local RowFunc = RowFunc.class
+	local CarRow = CarRow.class
+	local LogRow = LogRow.class
+	local TurtleRow = Turtle.class
+	local GoalRow = GoalRow.class
 local Goal = class('Frog')
 
 function Goal:initialize (x, y)
@@ -194,8 +246,18 @@ end
 do
 local _ENV = _ENV
 package.preload[ "remake-spradha1-vhuynh1/classes/goalRow" ] = function( ... ) local arg = _G.arg;
-local class = require 'middleclass'
-local Goal = require 'classes/goal'
+	local class = middleclass.class
+	local Frog = Frog.class
+	local Animate = Animate.class
+	local Car = Car.class
+	local Log = Log.class
+	local Turtle = Turtle.class
+	local Goal = Goal.class
+	local RowFunc = RowFunc.class
+	local CarRow = CarRow.class
+	local LogRow = LogRow.class
+	local TurtleRow = Turtle.class
+	local GoalRow = GoalRow.class
 local GoalRow = class('GoalRow')
 
 function GoalRow:initialize (xList, y)
@@ -231,7 +293,18 @@ end
 do
 local _ENV = _ENV
 package.preload[ "remake-spradha1-vhuynh1/classes/log" ] = function( ... ) local arg = _G.arg;
-local class = require 'middleclass'
+	local class = middleclass.class
+	local Frog = Frog.class
+	local Animate = Animate.class
+	local Car = Car.class
+	local Log = Log.class
+	local Turtle = Turtle.class
+	local Goal = Goal.class
+	local RowFunc = RowFunc.class
+	local CarRow = CarRow.class
+	local LogRow = LogRow.class
+	local TurtleRow = Turtle.class
+	local GoalRow = GoalRow.class
 local Log = class('Log')
 
 function Log:initialize (x, y, v, length) 
@@ -273,8 +346,18 @@ end
 do
 local _ENV = _ENV
 package.preload[ "remake-spradha1-vhuynh1/classes/logRow" ] = function( ... ) local arg = _G.arg;
-local class = require 'middleclass'
-local Log = require 'classes/log'
+	local class = middleclass.class
+	local Frog = Frog.class
+	local Animate = Animate.class
+	local Car = Car.class
+	local Log = Log.class
+	local Turtle = Turtle.class
+	local Goal = Goal.class
+	local RowFunc = RowFunc.class
+	local CarRow = CarRow.class
+	local LogRow = LogRow.class
+	local TurtleRow = Turtle.class
+	local GoalRow = GoalRow.class
 local LogRow = class('LogRow')
 
 function LogRow:initialize (xList, y, v, length)
@@ -331,8 +414,18 @@ end
 do
 local _ENV = _ENV
 package.preload[ "remake-spradha1-vhuynh1/classes/turtle" ] = function( ... ) local arg = _G.arg;
-local class = require 'middleclass'
-local Animate = require 'classes/animate'
+	local class = middleclass.class
+	local Frog = Frog.class
+	local Animate = Animate.class
+	local Car = Car.class
+	local Log = Log.class
+	local Turtle = Turtle.class
+	local Goal = Goal.class
+	local RowFunc = RowFunc.class
+	local CarRow = CarRow.class
+	local LogRow = LogRow.class
+	local TurtleRow = Turtle.class
+	local GoalRow = GoalRow.class
 local Turtle = class('Turtle')
 
 function Turtle:initialize (x, y, v, length) 
@@ -389,8 +482,18 @@ end
 do
 local _ENV = _ENV
 package.preload[ "remake-spradha1-vhuynh1/classes/turtleRow" ] = function( ... ) local arg = _G.arg;
-local class = require 'middleclass'
-local Turtle = require 'classes/turtle'
+	local class = middleclass.class
+	local Frog = Frog.class
+	local Animate = Animate.class
+	local Car = Car.class
+	local Log = Log.class
+	local Turtle = Turtle.class
+	local Goal = Goal.class
+	local RowFunc = RowFunc.class
+	local CarRow = CarRow.class
+	local LogRow = LogRow.class
+	local TurtleRow = Turtle.class
+	local GoalRow = GoalRow.class
 local TurtleRow = class('TurtleRow')
 
 function TurtleRow:initialize (xList, y, v, length)
@@ -641,18 +744,18 @@ TURTLE = {338, 339, 340}
 TURTLEDIVE = {336, 337}
 GOAL = {353, 354}
 
-local class = require 'middleclass'
-local Frog = require 'classes/frog'
-local Animate = require 'classes/animate'
-local Car = require 'classes/car'
-local Log = require 'classes/log'
-local Turtle = require 'classes/turtle'
-local Goal = require 'classes/goal'
-local RowFunc = require 'classes/rowFunc'
-local CarRow = require 'classes/carRow'
-local LogRow = require 'classes/logRow'
-local TurtleRow = require 'classes/turtleRow'
-local GoalRow = require 'classes/goalRow'
+local class = middleclass.class
+local Frog = Frog.class
+local Animate = Animate.class
+local Car = Car.class
+local Log = Log.class
+local Turtle = Turtle.class
+local Goal = Goal.class
+local RowFunc = RowFunc.class
+local CarRow = CarRow.class
+local LogRow = LogRow.class
+local TurtleRow = Turtle.class
+local GoalRow = GoalRow.class
 
 --debug variables
 local NOCOLLISIONS = false
