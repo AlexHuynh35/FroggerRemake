@@ -19,11 +19,17 @@ end
 
 function RowFunc:rowCollision (frog, objectList)
 	for index, object in pairs(objectList) do 
-		if collide(frog, object) then 
+		if collide(frog, object) and object.hasCol then 
 			return true 
 		end 
 	end 
 	return false 
+end
+
+function RowFunc:increaseRowV (objectList, speed)
+	for index, object in pairs(objectList) do 
+		object:increaseV(speed) 
+	end
 end
 
 return RowFunc

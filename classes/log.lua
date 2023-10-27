@@ -6,6 +6,7 @@ function Log:initialize (x, y, v, length)
 	self.y = y * 8
 	self.v = v
 	self.length = length
+	self.hasCol = true
 	self.sprites = self:fillSprList()
 end
 
@@ -32,5 +33,9 @@ function Log:draw ()
 		i = i + 1
 	end
 end 
+
+function Log:increaseV (speed)
+	self.v = self.v * speed
+end
 
 return Log

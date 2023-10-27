@@ -1,3 +1,4 @@
+require "math"
 local class = require 'middleclass'
 local Animate = require 'classes/animate'
 local Turtle = class('Turtle')
@@ -11,8 +12,9 @@ function Turtle:initialize (x, y, v, length)
 	self.diveSpr = {TURTLE[1], TURTLEDIVE[2], TURTLEDIVE[1], TURTLEDIVE[2], TURTLE[1]}
 	self.currentSprNum = 1
 	self.currentSprs = self.swimSpr
-	self.framesPerDive = 600
+	self.framesPerDive = 300 + math.random(1200)
 	self.diving = false
+	self.hasCol = true
 	self.animateSwim = Animate:new (5, self.swimSpr)
 	self.animateDive = Animate:new (60, self.diveSpr)
 end
@@ -27,6 +29,7 @@ function Turtle:update ()
 		self.currentSprNum = self.animateSwim.currentSpr
 		if self.framesPerDive == 0 then 
 			self.diving = true
+			self.hasCol = false
 			self.currentSprNum = 1
 			self.currentSprs = self.diveSpr
 		end
@@ -35,7 +38,8 @@ function Turtle:update ()
 		self.currentSprNum = self.animateDive.currentSpr
 		if self.animateDive.counter == self.animateDive.framesPerAni * (#self.animateDive.sprites - 1) then
 			self.diving = false
-			self.framesPerDive = 600
+			self.hasCol = true
+			self.framesPerDive = 300 + math.random(1200)
 			self.currentSprNum = 1
 			self.currentSprs = self.swimSpr
 		end
@@ -48,5 +52,9 @@ function Turtle:draw ()
 		i = i + 1
 	end
 end 
+
+function Turtle:increaseV (speed)
+	self.v = self.v * speed
+end
 
 return Turtle

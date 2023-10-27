@@ -5,6 +5,7 @@ function Car:initialize (x, y, v, sprites)
 	self.x = x * 8
 	self.y = y * 8
 	self.v = v
+	self.hasCol = true
 	self.sprites = sprites
 	self.length = #sprites
 end 
@@ -21,6 +22,10 @@ function Car:draw ()
 		spr(sprite, self.x + i*8, self.y, 0)
 		i = i + 1
 	end 
+end
+
+function Car:increaseV (speed)
+	self.v = self.v * speed
 end
 
 return Car

@@ -14,6 +14,7 @@ XSTART = 15 * 8
 YSTART = 15 * 8
 LEFTBOUND = 6 * 8
 RIGHTBOUND = 23 * 8
+LOWERBOUND = 16 * 8
 OFFSCREENLEFT = 32
 OFFSCREENRIGHT = 192
 LIVESPOS = {x = 6 * 8, y = 16 * 8}
@@ -39,6 +40,7 @@ local Log = require 'classes/log'
 local Turtle = require 'classes/turtle'
 local Goal = require 'classes/goal'
 local RowFunc = require 'classes/rowFunc'
+local RowPattern = require 'classes/rowPattern'
 local CarRow = require 'classes/carRow'
 local LogRow = require 'classes/logRow'
 local TurtleRow = require 'classes/turtleRow'
@@ -80,21 +82,9 @@ watDeath = false
 hasDied = false
 frogLastLoc = {}
 frog = Frog:new ()
-rowFunc = RowFunc:new ()
 animateColDeath = Animate:new (20, concatTable({COLDEATH[1]}, COLDEATH))
 animateWatDeath = Animate:new (20, concatTable({WATDEATH[1]}, WATDEATH))
-carRow1 = CarRow:new ({7, 12.5, 15, 20.5}, 14, -.4, Car1)
-carRow2 = CarRow:new ({10, 17, 24}, 13, .4, Car2)
-carRow3 = CarRow:new ({7, 12.5, 15, 20.5}, 12, -.4, Car4)
-carRow4 = CarRow:new ({8.5, 12}, 11, .8, Car5)
-carRow5 = CarRow:new ({8, 15, 22}, 10, -.3, Car3)
-carRows = {carRow1, carRow2, carRow3, carRow4, carRow5}
-turtleRow1 = TurtleRow:new ({6, 11, 16, 21}, 8, -.5, 3)
-logRow2 = LogRow:new ({6, 11, 16, 21}, 7, .3, 3)
-logRow3 = LogRow:new ({6, 16}, 6, .6, 6)
-turtleRow4 = TurtleRow:new ({6, 10, 14, 18, 22}, 5, -.5, 2)
-logRow5 = LogRow:new ({6, 12, 18}, 4, .4, 4)
-waterRows = {turtleRow1, logRow2, logRow3, turtleRow4, logRow5}
+allRowPatterns = RowPattern:new ()
 goalRow = GoalRow:new ({56, 88, 120, 152, 176}, 24)
 goalsCompleted = 0
 level = 1
@@ -153,32 +143,32 @@ function TIC()
 	end
 	-- Row Updates
 	for i = 1, 5 do 
-		rowFunc:updateObjectRow(carRows[i].cars)
-		rowFunc:updateObjectRow(waterRows[i].waterObjs)
+		allRowPatterns.func:updateObjectRow(allRowPatterns:returnPattern(level%5)[1][i].cars)
+		allRowPatterns.func:updateObjectRow(allRowPatterns:returnPattern(level%5)[2][i].waterObjs)
 	end 
 	for i = 1, 5 do 
-		rowFunc:drawObjectRow(carRows[i].cars)
-		rowFunc:drawObjectRow(waterRows[i].waterObjs) 
+		allRowPatterns.func:drawObjectRow(allRowPatterns:returnPattern(level%5)[1][i].cars)
+		allRowPatterns.func:drawObjectRow(allRowPatterns:returnPattern(level%5)[2][i].waterObjs) 
 	end
 	-- Collision Check
 	if not colDeath and not watDeath then frog:drawFrog() end
 	if not NOCOLLISIONS then 
 		for i = 1, 5 do 
-			if rowFunc:rowCollision(frog, carRows[i].cars) then 
+			if allRowPatterns.func:rowCollision(frog, allRowPatterns:returnPattern(level%5)[1][i].cars) then 
 				colDeath = true
 				hasDied = true
 				frogLastLoc = {frog.x, frog.y}
 				roundStartTime = time()
 				frog:reset()
 			end
-			if (not rowFunc:rowCollision(frog, waterRows[i].waterObjs)) and frog.realY == waterRows[i].y then 
+			if ((not allRowPatterns.func:rowCollision(frog, allRowPatterns:returnPattern(level%5)[2][i].waterObjs)) and frog.realY == allRowPatterns:returnPattern(level%5)[2][i].y) then 
 				watDeath = true
 				hasDied = true
 				frogLastLoc = {frog.x, frog.y}
 				roundStartTime = time()
 				frog:reset()
-			elseif rowFunc:rowCollision(frog, waterRows[i].waterObjs) then
-				frog.x = frog.x + waterRows[i].v
+			elseif allRowPatterns.func:rowCollision(frog, allRowPatterns:returnPattern(level%5)[2][i].waterObjs) and frog.x > LEFTBOUND and frog.x < RIGHTBOUND then
+				frog.x = frog.x + allRowPatterns:returnPattern(level%5)[2][i].v
 			end
 		end
 	end 
@@ -194,10 +184,13 @@ function TIC()
 		frogLastLoc = {frog.x, frog.y}
 		frog:reset()
 	end 
-	rowFunc:drawObjectRow(goalRow.goalObjs)
+	allRowPatterns.func:drawObjectRow(goalRow.goalObjs)
 	-- Finished Level
 	if goalsCompleted == 5 then 
 		level = level + 1
+		if level%5 == 1 then
+			allRowPatterns:increaseSpeed()
+		end
 		points = points + 1000
 		goalRow:reset() 
 		if lives < 4 then

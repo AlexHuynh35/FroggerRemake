@@ -26,7 +26,7 @@ function Frog:update ()
 		if (self.direction == 0 and self.movementTimer%self.framesPerStep == 0) then 
 			self.y=self.y-2
 		end
-		if (self.direction == 2 and self.movementTimer%self.framesPerStep == 0) then 
+		if (self.direction == 2 and self.y < LOWERBOUND and self.movementTimer%self.framesPerStep == 0) then 
 			self.y=self.y+2
 		end
 		self.movementTimer = self.movementTimer - 1
@@ -52,7 +52,9 @@ function Frog:update ()
 		if btnp(CONTROL.down) then
 			self.moving = true
 			self.direction = 2
-			self.realY = self.realY + 8
+			if self.y < LOWERBOUND then
+				self.realY = self.realY + 8
+			end
 		end
 	end
 	return false 
