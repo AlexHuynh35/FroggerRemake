@@ -36,6 +36,7 @@ function Car:initialize (x, y, v, sprites)
 	self.x = x * 8
 	self.y = y * 8
 	self.v = v
+	self.hasCol = true
 	self.sprites = sprites
 	self.length = #sprites
 end 
@@ -52,6 +53,10 @@ function Car:draw ()
 		spr(sprite, self.x + i*8, self.y, 0)
 		i = i + 1
 	end 
+end
+
+function Car:increaseV (speed)
+	self.v = self.v * speed
 end
 
 return Car
@@ -110,7 +115,7 @@ function Frog:update ()
 		if (self.direction == 0 and self.movementTimer%self.framesPerStep == 0) then 
 			self.y=self.y-2
 		end
-		if (self.direction == 2 and self.movementTimer%self.framesPerStep == 0) then 
+		if (self.direction == 2 and self.y < LOWERBOUND and self.movementTimer%self.framesPerStep == 0) then 
 			self.y=self.y+2
 		end
 		self.movementTimer = self.movementTimer - 1
@@ -136,7 +141,9 @@ function Frog:update ()
 		if btnp(CONTROL.down) then
 			self.moving = true
 			self.direction = 2
-			self.realY = self.realY + 8
+			if self.y < LOWERBOUND then
+				self.realY = self.realY + 8
+			end
 		end
 	end
 	return false 
@@ -239,6 +246,7 @@ function Log:initialize (x, y, v, length)
 	self.y = y * 8
 	self.v = v
 	self.length = length
+	self.hasCol = true
 	self.sprites = self:fillSprList()
 end
 
@@ -265,6 +273,10 @@ function Log:draw ()
 		i = i + 1
 	end
 end 
+
+function Log:increaseV (speed)
+	self.v = self.v * speed
+end
 
 return Log
 end
@@ -317,11 +329,17 @@ end
 
 function RowFunc:rowCollision (frog, objectList)
 	for index, object in pairs(objectList) do 
-		if collide(frog, object) then 
+		if collide(frog, object) and object.hasCol then 
 			return true 
 		end 
 	end 
 	return false 
+end
+
+function RowFunc:increaseRowV (objectList, speed)
+	for index, object in pairs(objectList) do 
+		object:increaseV(speed) 
+	end
 end
 
 return RowFunc
@@ -330,7 +348,131 @@ end
 
 do
 local _ENV = _ENV
+package.preload[ "classes/rowPattern" ] = function( ... ) local arg = _G.arg;
+local class = require 'middleclass'
+local CarRow = require 'classes/carRow'
+local LogRow = require 'classes/logRow'
+local TurtleRow = require 'classes/turtleRow'
+local RowFunc = require 'classes/rowFunc'
+local RowPattern = class('RowPattern')
+
+function RowPattern:initialize ()
+    self.speed = 1
+    self.func = RowFunc:new ()
+    self.pattern1 = self:createPatternOne ()
+    self.pattern2 = self:createPatternTwo ()
+    self.pattern3 = self:createPatternThree ()
+    self.pattern4 = self:createPatternFour ()
+    self.pattern5 = self:createPatternFive ()
+end
+
+function RowPattern:increaseSpeed ()
+    self.speed = self.speed + .5
+    for i = 1, 5 do
+        for j = 1, 5 do
+            self.func:increaseRowV(self:returnPattern(i%5)[1][j].cars, self.speed)
+            self:returnPattern(i%5)[2][j].v = self:returnPattern(i%5)[2][j].v * self.speed
+            self.func:increaseRowV(self:returnPattern(i%5)[2][j].waterObjs, self.speed)
+        end
+    end
+end
+
+function RowPattern:returnPattern (n)
+    if n == 1 then return self.pattern1 end
+    if n == 2 then return self.pattern2 end
+    if n == 3 then return self.pattern3 end
+    if n == 4 then return self.pattern4 end
+    if n == 0 then return self.pattern5 end
+end
+
+function RowPattern:createPatternOne ()
+    carRow1 = CarRow:new ({7, 15}, 14, -.2, Car1)
+    carRow2 = CarRow:new ({10, 20.5}, 13, .2, Car2)
+    carRow3 = CarRow:new ({7, 15}, 12, -.2, Car4)
+    carRow4 = CarRow:new ({8.5}, 11, .4, Car5)
+    carRow5 = CarRow:new ({8, 18.5}, 10, -.15, Car3)
+    carRows = {carRow1, carRow2, carRow3, carRow4, carRow5}
+    turtleRow1 = TurtleRow:new ({6, 11, 16, 21}, 8, -.25, 3)
+    logRow2 = LogRow:new ({6, 11, 16, 21}, 7, .15, 3)
+    logRow3 = LogRow:new ({6, 16}, 6, .3, 6)
+    turtleRow4 = TurtleRow:new ({6, 10, 14, 18, 22}, 5, -.25, 2)
+    logRow5 = LogRow:new ({6, 12, 18}, 4, .2, 4)
+    waterRows = {turtleRow1, logRow2, logRow3, turtleRow4, logRow5}
+    return {carRows, waterRows}
+end
+
+function RowPattern:createPatternTwo ()
+    carRow1 = CarRow:new ({7, 13, 19}, 14, -.2, Car1)
+    carRow2 = CarRow:new ({10, 20.5}, 13, .2, Car2)
+    carRow3 = CarRow:new ({7, 13, 19}, 12, -.2, Car4)
+    carRow4 = CarRow:new ({8.5}, 11, .4, Car5)
+    carRow5 = CarRow:new ({8, 18.5}, 10, -.15, Car3)
+    carRows = {carRow1, carRow2, carRow3, carRow4, carRow5}
+    turtleRow1 = TurtleRow:new ({6, 11, 16, 21}, 8, -.25, 3)
+    logRow2 = LogRow:new ({6, 11, 16, 21}, 7, .15, 3)
+    logRow3 = LogRow:new ({6, 16}, 6, .3, 6)
+    turtleRow4 = TurtleRow:new ({6, 10, 14, 18, 22}, 5, -.25, 2)
+    logRow5 = LogRow:new ({6, 12, 18}, 4, .2, 4)
+    waterRows = {turtleRow1, logRow2, logRow3, turtleRow4, logRow5}
+    return {carRows, waterRows}
+end
+
+function RowPattern:createPatternThree ()
+    carRow1 = CarRow:new ({7, 13, 19}, 14, -.2, Car1)
+    carRow2 = CarRow:new ({10, 20.5}, 13, .2, Car2)
+    carRow3 = CarRow:new ({7, 13, 19}, 12, -.2, Car4)
+    carRow4 = CarRow:new ({8.5, 12}, 11, .4, Car5)
+    carRow5 = CarRow:new ({8, 15, 22}, 10, -.15, Car3)
+    carRows = {carRow1, carRow2, carRow3, carRow4, carRow5}
+    turtleRow1 = TurtleRow:new ({6, 11, 16, 21}, 8, -.25, 3)
+    logRow2 = LogRow:new ({6, 11, 16, 21}, 7, .15, 3)
+    logRow3 = LogRow:new ({6, 16}, 6, .3, 6)
+    turtleRow4 = TurtleRow:new ({6, 10, 14, 18, 22}, 5, -.25, 2)
+    logRow5 = LogRow:new ({6, 12, 18}, 4, .2, 4)
+    waterRows = {turtleRow1, logRow2, logRow3, turtleRow4, logRow5}
+    return {carRows, waterRows}
+end
+
+function RowPattern:createPatternFour ()
+    carRow1 = CarRow:new ({7, 12.5, 15, 20.5}, 14, -.2, Car1)
+    carRow2 = CarRow:new ({10, 17, 24}, 13, .2, Car2)
+    carRow3 = CarRow:new ({7, 12.5, 15, 20.5}, 12, -.2, Car4)
+    carRow4 = CarRow:new ({8.5, 12}, 11, .4, Car5)
+    carRow5 = CarRow:new ({8, 15, 22}, 10, -.15, Car3)
+    carRows = {carRow1, carRow2, carRow3, carRow4, carRow5}
+    turtleRow1 = TurtleRow:new ({6, 11, 16, 21}, 8, -.25, 3)
+    logRow2 = LogRow:new ({6, 11, 16, 21}, 7, .15, 3)
+    logRow3 = LogRow:new ({6, 16}, 6, .3, 6)
+    turtleRow4 = TurtleRow:new ({6, 10, 14, 18, 22}, 5, -.25, 2)
+    logRow5 = LogRow:new ({6, 12, 18}, 4, .2, 4)
+    waterRows = {turtleRow1, logRow2, logRow3, turtleRow4, logRow5}
+    return {carRows, waterRows}
+end
+
+function RowPattern:createPatternFive ()
+    carRow1 = CarRow:new ({7, 12.5, 15, 20.5}, 14, -.2, Car1)
+    carRow2 = CarRow:new ({10, 17, 24}, 13, .2, Car2)
+    carRow3 = CarRow:new ({7, 12.5, 15, 20.5}, 12, -.2, Car4)
+    carRow4 = CarRow:new ({8.5, 12, 15.5}, 11, .4, Car5)
+    carRow5 = CarRow:new ({8, 15, 22}, 10, -.15, Car3)
+    carRows = {carRow1, carRow2, carRow3, carRow4, carRow5}
+    turtleRow1 = TurtleRow:new ({6, 11, 16, 21}, 8, -.25, 3)
+    logRow2 = LogRow:new ({6, 11, 16, 21}, 7, .15, 3)
+    logRow3 = LogRow:new ({6, 16}, 6, .3, 6)
+    turtleRow4 = TurtleRow:new ({6, 10, 14, 18, 22}, 5, -.25, 2)
+    logRow5 = LogRow:new ({6, 12, 18}, 4, .2, 4)
+    waterRows = {turtleRow1, logRow2, logRow3, turtleRow4, logRow5}
+    return {carRows, waterRows}
+end
+
+return RowPattern
+end
+end
+
+do
+local _ENV = _ENV
 package.preload[ "classes/turtle" ] = function( ... ) local arg = _G.arg;
+require "math"
 local class = require 'middleclass'
 local Animate = require 'classes/animate'
 local Turtle = class('Turtle')
@@ -344,8 +486,9 @@ function Turtle:initialize (x, y, v, length)
 	self.diveSpr = {TURTLE[1], TURTLEDIVE[2], TURTLEDIVE[1], TURTLEDIVE[2], TURTLE[1]}
 	self.currentSprNum = 1
 	self.currentSprs = self.swimSpr
-	self.framesPerDive = 600
+	self.framesPerDive = 300 + math.random(1200)
 	self.diving = false
+	self.hasCol = true
 	self.animateSwim = Animate:new (5, self.swimSpr)
 	self.animateDive = Animate:new (60, self.diveSpr)
 end
@@ -360,6 +503,7 @@ function Turtle:update ()
 		self.currentSprNum = self.animateSwim.currentSpr
 		if self.framesPerDive == 0 then 
 			self.diving = true
+			self.hasCol = false
 			self.currentSprNum = 1
 			self.currentSprs = self.diveSpr
 		end
@@ -368,7 +512,8 @@ function Turtle:update ()
 		self.currentSprNum = self.animateDive.currentSpr
 		if self.animateDive.counter == self.animateDive.framesPerAni * (#self.animateDive.sprites - 1) then
 			self.diving = false
-			self.framesPerDive = 600
+			self.hasCol = true
+			self.framesPerDive = 300 + math.random(1200)
 			self.currentSprNum = 1
 			self.currentSprs = self.swimSpr
 		end
@@ -381,6 +526,10 @@ function Turtle:draw ()
 		i = i + 1
 	end
 end 
+
+function Turtle:increaseV (speed)
+	self.v = self.v * speed
+end
 
 return Turtle
 end
@@ -624,6 +773,7 @@ XSTART = 15 * 8
 YSTART = 15 * 8
 LEFTBOUND = 6 * 8
 RIGHTBOUND = 23 * 8
+LOWERBOUND = 16 * 8
 OFFSCREENLEFT = 32
 OFFSCREENRIGHT = 192
 LIVESPOS = {x = 6 * 8, y = 16 * 8}
@@ -649,6 +799,7 @@ local Log = require 'classes/log'
 local Turtle = require 'classes/turtle'
 local Goal = require 'classes/goal'
 local RowFunc = require 'classes/rowFunc'
+local RowPattern = require 'classes/rowPattern'
 local CarRow = require 'classes/carRow'
 local LogRow = require 'classes/logRow'
 local TurtleRow = require 'classes/turtleRow'
@@ -690,21 +841,9 @@ watDeath = false
 hasDied = false
 frogLastLoc = {}
 frog = Frog:new ()
-rowFunc = RowFunc:new ()
 animateColDeath = Animate:new (20, concatTable({COLDEATH[1]}, COLDEATH))
 animateWatDeath = Animate:new (20, concatTable({WATDEATH[1]}, WATDEATH))
-carRow1 = CarRow:new ({7, 12.5, 15, 20.5}, 14, -.4, Car1)
-carRow2 = CarRow:new ({10, 17, 24}, 13, .4, Car2)
-carRow3 = CarRow:new ({7, 12.5, 15, 20.5}, 12, -.4, Car4)
-carRow4 = CarRow:new ({8.5, 12}, 11, .8, Car5)
-carRow5 = CarRow:new ({8, 15, 22}, 10, -.3, Car3)
-carRows = {carRow1, carRow2, carRow3, carRow4, carRow5}
-turtleRow1 = TurtleRow:new ({6, 11, 16, 21}, 8, -.5, 3)
-logRow2 = LogRow:new ({6, 11, 16, 21}, 7, .3, 3)
-logRow3 = LogRow:new ({6, 16}, 6, .6, 6)
-turtleRow4 = TurtleRow:new ({6, 10, 14, 18, 22}, 5, -.5, 2)
-logRow5 = LogRow:new ({6, 12, 18}, 4, .4, 4)
-waterRows = {turtleRow1, logRow2, logRow3, turtleRow4, logRow5}
+allRowPatterns = RowPattern:new ()
 goalRow = GoalRow:new ({56, 88, 120, 152, 176}, 24)
 goalsCompleted = 0
 level = 1
@@ -763,32 +902,32 @@ function TIC()
 	end
 	-- Row Updates
 	for i = 1, 5 do 
-		rowFunc:updateObjectRow(carRows[i].cars)
-		rowFunc:updateObjectRow(waterRows[i].waterObjs)
+		allRowPatterns.func:updateObjectRow(allRowPatterns:returnPattern(level%5)[1][i].cars)
+		allRowPatterns.func:updateObjectRow(allRowPatterns:returnPattern(level%5)[2][i].waterObjs)
 	end 
 	for i = 1, 5 do 
-		rowFunc:drawObjectRow(carRows[i].cars)
-		rowFunc:drawObjectRow(waterRows[i].waterObjs) 
+		allRowPatterns.func:drawObjectRow(allRowPatterns:returnPattern(level%5)[1][i].cars)
+		allRowPatterns.func:drawObjectRow(allRowPatterns:returnPattern(level%5)[2][i].waterObjs) 
 	end
 	-- Collision Check
 	if not colDeath and not watDeath then frog:drawFrog() end
 	if not NOCOLLISIONS then 
 		for i = 1, 5 do 
-			if rowFunc:rowCollision(frog, carRows[i].cars) then 
+			if allRowPatterns.func:rowCollision(frog, allRowPatterns:returnPattern(level%5)[1][i].cars) then 
 				colDeath = true
 				hasDied = true
 				frogLastLoc = {frog.x, frog.y}
 				roundStartTime = time()
 				frog:reset()
 			end
-			if (not rowFunc:rowCollision(frog, waterRows[i].waterObjs)) and frog.realY == waterRows[i].y then 
+			if ((not allRowPatterns.func:rowCollision(frog, allRowPatterns:returnPattern(level%5)[2][i].waterObjs)) and frog.realY == allRowPatterns:returnPattern(level%5)[2][i].y) then 
 				watDeath = true
 				hasDied = true
 				frogLastLoc = {frog.x, frog.y}
 				roundStartTime = time()
 				frog:reset()
-			elseif rowFunc:rowCollision(frog, waterRows[i].waterObjs) then
-				frog.x = frog.x + waterRows[i].v
+			elseif allRowPatterns.func:rowCollision(frog, allRowPatterns:returnPattern(level%5)[2][i].waterObjs) and frog.x > LEFTBOUND and frog.x < RIGHTBOUND then
+				frog.x = frog.x + allRowPatterns:returnPattern(level%5)[2][i].v
 			end
 		end
 	end 
@@ -804,10 +943,13 @@ function TIC()
 		frogLastLoc = {frog.x, frog.y}
 		frog:reset()
 	end 
-	rowFunc:drawObjectRow(goalRow.goalObjs)
+	allRowPatterns.func:drawObjectRow(goalRow.goalObjs)
 	-- Finished Level
 	if goalsCompleted == 5 then 
 		level = level + 1
+		if level%5 == 1 then
+			allRowPatterns:increaseSpeed()
+		end
 		points = points + 1000
 		goalRow:reset() 
 		if lives < 4 then
