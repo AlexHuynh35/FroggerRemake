@@ -167,6 +167,68 @@ end
 
 do
 local _ENV = _ENV
+package.preload[ "classes/gator" ] = function( ... ) local arg = _G.arg;
+local class = require 'middleclass'
+local Animate = require 'classes/animate'
+local Gator = class('Gator')
+
+function Gator:initialize (x, y, v, logLength) 
+	self.x = 0
+    self.lastX = x * 8
+	self.y = y * 8
+	self.v = v
+    self.length = 3
+	self.logLength = logLength
+    self.active = false
+	self.body = GATORBODY
+    self.head = concatTable({GATORHEAD[1]}, GATORHEAD)
+    self.animateHead = Animate:new (120, self.head)
+end
+
+function Gator:update ()
+    if self.active then
+        self.x = self.x + self.v
+        if self.x < OFFSCREENLEFT - self.logLength * 8 then self.x = OFFSCREENRIGHT end 
+        if self.x > OFFSCREENRIGHT then self.x = OFFSCREENLEFT - self.logLength * 8 end
+        self.animateHead:play()
+    end
+end
+
+function Gator:draw ()
+    if self.active then
+        spr(self.body[1], self.x, self.y, 0)
+        spr(self.body[2], self.x + 8, self.y, 0)
+        spr(self.head[self.animateHead.currentSpr], self.x + 16, self.y, 0)
+    end
+end
+
+function Gator:changeV (speed)
+    self.v = self.v * speed
+end
+
+function Gator:activate ()
+    self.active = true
+    self.x = self.lastX
+end
+
+function Gator:deactivate ()
+    self.active = false
+    self.lastX = self.x
+    self.x = 0
+end
+
+function Gator:touchingHead (frog)
+    local d = (frog.x - (self.x + 16))^2 + (frog.realY - self.y)^2
+	if d < 64 then return true end
+	return false
+end
+
+return Gator
+end
+end
+
+do
+local _ENV = _ENV
 package.preload[ "classes/goal" ] = function( ... ) local arg = _G.arg;
 local class = require 'middleclass'
 local Frog = require 'classes/frog'
@@ -252,8 +314,8 @@ end
 
 function Log:update ()
 	self.x = self.x + self.v
-	if self.x < OFFSCREENLEFT - self.length then self.x = OFFSCREENRIGHT end 
-	if self.x > OFFSCREENRIGHT then self.x = OFFSCREENLEFT - self.length end 
+	if self.x < OFFSCREENLEFT - self.length * 8 then self.x = OFFSCREENRIGHT end 
+	if self.x > OFFSCREENRIGHT then self.x = OFFSCREENLEFT - self.length * 8 end 
 end 
 
 function Log:fillSprList ()
@@ -396,7 +458,7 @@ function RowPattern:createPatternOne ()
     logRow2 = LogRow:new ({6, 11, 16, 21}, 7, .15, 3)
     logRow3 = LogRow:new ({6, 16}, 6, .3, 6)
     turtleRow4 = TurtleRow:new ({6, 10, 14, 18, 22}, 5, -.25, 2)
-    logRow5 = LogRow:new ({6, 12, 18}, 4, .2, 4)
+    logRow5 = LogRow:new ({6, 13, 20}, 4, .2, 4)
     waterRows = {turtleRow1, logRow2, logRow3, turtleRow4, logRow5}
     return {carRows, waterRows}
 end
@@ -412,7 +474,7 @@ function RowPattern:createPatternTwo ()
     logRow2 = LogRow:new ({6, 11, 16, 21}, 7, .15, 3)
     logRow3 = LogRow:new ({6, 16}, 6, .3, 6)
     turtleRow4 = TurtleRow:new ({6, 10, 14, 18, 22}, 5, -.25, 2)
-    logRow5 = LogRow:new ({6, 12, 18}, 4, .2, 4)
+    logRow5 = LogRow:new ({6, 20}, 4, .2, 4)
     waterRows = {turtleRow1, logRow2, logRow3, turtleRow4, logRow5}
     return {carRows, waterRows}
 end
@@ -428,7 +490,7 @@ function RowPattern:createPatternThree ()
     logRow2 = LogRow:new ({6, 11, 16, 21}, 7, .15, 3)
     logRow3 = LogRow:new ({6, 16}, 6, .3, 6)
     turtleRow4 = TurtleRow:new ({6, 10, 14, 18, 22}, 5, -.25, 2)
-    logRow5 = LogRow:new ({6, 12, 18}, 4, .2, 4)
+    logRow5 = LogRow:new ({6, 20}, 4, .2, 4)
     waterRows = {turtleRow1, logRow2, logRow3, turtleRow4, logRow5}
     return {carRows, waterRows}
 end
@@ -441,10 +503,10 @@ function RowPattern:createPatternFour ()
     carRow5 = CarRow:new ({8, 15, 22}, 10, -.15, Car3)
     carRows = {carRow1, carRow2, carRow3, carRow4, carRow5}
     turtleRow1 = TurtleRow:new ({6, 11, 16, 21}, 8, -.25, 3)
-    logRow2 = LogRow:new ({6, 11, 16, 21}, 7, .15, 3)
+    logRow2 = LogRow:new ({6, 11, 21}, 7, .15, 3)
     logRow3 = LogRow:new ({6, 16}, 6, .3, 6)
     turtleRow4 = TurtleRow:new ({6, 10, 14, 18, 22}, 5, -.25, 2)
-    logRow5 = LogRow:new ({6, 12, 18}, 4, .2, 4)
+    logRow5 = LogRow:new ({6, 20}, 4, .2, 4)
     waterRows = {turtleRow1, logRow2, logRow3, turtleRow4, logRow5}
     return {carRows, waterRows}
 end
@@ -457,15 +519,74 @@ function RowPattern:createPatternFive ()
     carRow5 = CarRow:new ({8, 15, 22}, 10, -.15, Car3)
     carRows = {carRow1, carRow2, carRow3, carRow4, carRow5}
     turtleRow1 = TurtleRow:new ({6, 11, 16, 21}, 8, -.25, 3)
-    logRow2 = LogRow:new ({6, 11, 16, 21}, 7, .15, 3)
+    logRow2 = LogRow:new ({6, 11, 21}, 7, .15, 3)
     logRow3 = LogRow:new ({6, 16}, 6, .3, 6)
     turtleRow4 = TurtleRow:new ({6, 10, 14, 18, 22}, 5, -.25, 2)
-    logRow5 = LogRow:new ({6, 12, 18}, 4, .2, 4)
+    logRow5 = LogRow:new ({6, 20}, 4, .2, 4)
     waterRows = {turtleRow1, logRow2, logRow3, turtleRow4, logRow5}
     return {carRows, waterRows}
 end
 
 return RowPattern
+end
+end
+
+do
+local _ENV = _ENV
+package.preload[ "classes/snake" ] = function( ... ) local arg = _G.arg;
+require "math"
+local class = require 'middleclass'
+local Animate = require 'classes/animate'
+local Snake = class('Snake')
+
+function Snake:initialize (x, y) 
+	self.x = 0
+    self.lastX = x * 8
+	self.y = y * 8
+	self.v = 0.3
+    self.direction = 1
+    self.length = 2
+    self.active = false
+    self.head = concatTable({SNAKEHEAD[1]}, SNAKEHEAD)
+    self.tail = concatTable({SNAKETAIL[1]}, SNAKETAIL)
+	self.animateHead = Animate:new (5, self.head)
+	self.animateTail = Animate:new (5, self.tail)
+end
+
+function Snake:update ()
+    if self.active then
+        self.x = self.x + self.direction * self.v
+        if self.x < OFFSCREENLEFT + 16 then self.direction = self.direction * -1 end 
+        if self.x > OFFSCREENRIGHT - 16 then self.direction = self.direction * -1 end 
+        self.animateHead:play()
+        self.animateTail:play()
+    end
+end 
+
+function Snake:draw ()
+    if self.active then
+        if self.direction == 1 then
+            spr(self.head[self.animateHead.currentSpr], self.x + 8, self.y, 0, 1, 1)
+            spr(self.tail[self.animateHead.currentSpr], self.x, self.y, 0, 1, 1)
+        else
+            spr(self.head[self.animateHead.currentSpr], self.x, self.y, 0, 1, 0)
+            spr(self.tail[self.animateHead.currentSpr], self.x + 8, self.y, 0, 1, 0)
+        end
+    end
+end 
+
+function Snake:activate ()
+    self.active = true
+    self.x = self.lastX
+end
+
+function Snake:deactivate ()
+    self.active = false
+    self.lastX = self.x
+    self.x = 0
+end
+
+return Snake
 end
 end
 
@@ -483,10 +604,10 @@ function Turtle:initialize (x, y, v, length)
 	self.v = v
 	self.length = length
 	self.swimSpr = concatTable({TURTLE[1]}, TURTLE)
-	self.diveSpr = {TURTLE[1], TURTLEDIVE[2], TURTLEDIVE[1], TURTLEDIVE[2], TURTLE[1]}
+	self.diveSpr = {TURTLE[1], TURTLEDIVE[2], TURTLEDIVE[1], TURTLEDIVE[2]}
 	self.currentSprNum = 1
 	self.currentSprs = self.swimSpr
-	self.framesPerDive = 300 + math.random(1200)
+	self.framesPerDive = math.random(2400)
 	self.diving = false
 	self.hasCol = true
 	self.animateSwim = Animate:new (5, self.swimSpr)
@@ -495,8 +616,8 @@ end
 
 function Turtle:update ()
 	self.x = self.x + self.v
-	if self.x < OFFSCREENLEFT - self.length then self.x = OFFSCREENRIGHT end 
-	if self.x > OFFSCREENRIGHT then self.x = OFFSCREENLEFT - self.length end 
+	if self.x < OFFSCREENLEFT - self.length * 8 then self.x = OFFSCREENRIGHT end 
+	if self.x > OFFSCREENRIGHT then self.x = OFFSCREENLEFT - self.length * 8 end 
 	if not self.diving then
 		self.framesPerDive = self.framesPerDive - 1
 		self.animateSwim:play()
@@ -513,7 +634,7 @@ function Turtle:update ()
 		if self.animateDive.counter == self.animateDive.framesPerAni * (#self.animateDive.sprites - 1) then
 			self.diving = false
 			self.hasCol = true
-			self.framesPerDive = 300 + math.random(1200)
+			self.framesPerDive = math.random(2400)
 			self.currentSprNum = 1
 			self.currentSprs = self.swimSpr
 		end
@@ -789,6 +910,10 @@ WATDEATH = {305, 306, 307, 304}
 LOG = {390, 391, 392}
 TURTLE = {338, 339, 340}
 TURTLEDIVE = {336, 337}
+SNAKEHEAD = {384, 386, 388}
+SNAKETAIL = {385, 387, 389}
+GATORBODY = {368, 369}
+GATORHEAD = {370, 371}
 GOAL = {353, 354}
 
 local class = require 'middleclass'
@@ -797,6 +922,8 @@ local Animate = require 'classes/animate'
 local Car = require 'classes/car'
 local Log = require 'classes/log'
 local Turtle = require 'classes/turtle'
+local Snake = require 'classes/snake'
+local Gator = require 'classes/gator'
 local Goal = require 'classes/goal'
 local RowFunc = require 'classes/rowFunc'
 local RowPattern = require 'classes/rowPattern'
@@ -841,6 +968,9 @@ watDeath = false
 hasDied = false
 frogLastLoc = {}
 frog = Frog:new ()
+snake = Snake:new (9, 9)
+gatorTop = Gator:new (12, 4, .2, 4)
+gatorMid = Gator:new (16, 7, .15, 3)
 animateColDeath = Animate:new (20, concatTable({COLDEATH[1]}, COLDEATH))
 animateWatDeath = Animate:new (20, concatTable({WATDEATH[1]}, WATDEATH))
 allRowPatterns = RowPattern:new ()
@@ -857,14 +987,14 @@ function TIC()
 	-- Time Display
 	timeLeft = 30 - ((time() - roundStartTime) / 1000)
 	timeWidth = (timeLeft / 30) * (6 * 8)
-	print("TIME:", 15 * 8, 16 * 8 + 1, 12)
+	print("TIME:", 15 * 8, 16 * 8 + 1, 4)
 	rect(18 * 8, 16 * 8 + 2, timeWidth, 3, 6)
 	-- Points Display
 	print("POINTS:", 16 * 8, 0, 12, 1, 1)
-	print(tostring(points), 16 * 8, 1 * 8, 12, 1, 1)
+	print(tostring(points), 16 * 8, 1 * 8, 2, 1, 1)
 	-- Level Display
 	print("LEVEL:", 6 * 8, 0, 12, 1, 1)
-	print(tostring(level), 6 * 8, 1 * 8, 12, 1, 1)
+	print(tostring(level), 6 * 8, 1 * 8, 2, 1, 1)
 	-- Lives Display
 	for i = 0, lives-1 do
 		spr(FROG[1], LIVESPOS.x + (i * 8), LIVESPOS.y, 0)
@@ -905,10 +1035,16 @@ function TIC()
 		allRowPatterns.func:updateObjectRow(allRowPatterns:returnPattern(level%5)[1][i].cars)
 		allRowPatterns.func:updateObjectRow(allRowPatterns:returnPattern(level%5)[2][i].waterObjs)
 	end 
+	snake:update()
+	gatorTop:update()
+	gatorMid:update()
 	for i = 1, 5 do 
 		allRowPatterns.func:drawObjectRow(allRowPatterns:returnPattern(level%5)[1][i].cars)
 		allRowPatterns.func:drawObjectRow(allRowPatterns:returnPattern(level%5)[2][i].waterObjs) 
 	end
+	snake:draw()
+	gatorTop:draw()
+	gatorMid:draw()
 	-- Collision Check
 	if not colDeath and not watDeath then frog:drawFrog() end
 	if not NOCOLLISIONS then 
@@ -921,14 +1057,43 @@ function TIC()
 				frog:reset()
 			end
 			if ((not allRowPatterns.func:rowCollision(frog, allRowPatterns:returnPattern(level%5)[2][i].waterObjs)) and frog.realY == allRowPatterns:returnPattern(level%5)[2][i].y) then 
-				watDeath = true
-				hasDied = true
-				frogLastLoc = {frog.x, frog.y}
-				roundStartTime = time()
-				frog:reset()
+				if collide(frog, gatorTop) then
+					if gatorTop:touchingHead(frog) then
+						colDeath = true
+						hasDied = true
+						frogLastLoc = {frog.x, frog.y}
+						roundStartTime = time()
+						frog:reset()
+					else
+						frog.x = frog.x + gatorTop.v
+					end
+				elseif collide(frog, gatorMid) then
+					if gatorMid:touchingHead(frog) then
+						colDeath = true
+						hasDied = true
+						frogLastLoc = {frog.x, frog.y}
+						roundStartTime = time()
+						frog:reset()
+					else
+						frog.x = frog.x + gatorTop.v
+					end
+				else
+					watDeath = true
+					hasDied = true
+					frogLastLoc = {frog.x, frog.y}
+					roundStartTime = time()
+					frog:reset()
+				end
 			elseif allRowPatterns.func:rowCollision(frog, allRowPatterns:returnPattern(level%5)[2][i].waterObjs) and frog.x > LEFTBOUND and frog.x < RIGHTBOUND then
 				frog.x = frog.x + allRowPatterns:returnPattern(level%5)[2][i].v
 			end
+		end
+		if collide(frog, snake) then
+			colDeath = true
+			hasDied = true
+			frogLastLoc = {frog.x, frog.y}
+			roundStartTime = time()
+			frog:reset()
 		end
 	end 
 	-- Reached Goal
@@ -949,6 +1114,20 @@ function TIC()
 		level = level + 1
 		if level%5 == 1 then
 			allRowPatterns:increaseSpeed()
+			gatorTop:changeV (allRowPatterns.speed)
+			gatorMid:changeV (allRowPatterns.speed)
+			snake:deactivate()
+			gatorTop:deactivate()
+			gatorMid:deactivate()
+		end
+		if level%5 == 2 then
+			gatorTop:activate()
+		end
+		if level%5 == 3 then
+			snake:activate()
+		end
+		if level%5 == 4 then
+			gatorMid:activate()
 		end
 		points = points + 1000
 		goalRow:reset() 
