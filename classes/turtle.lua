@@ -9,10 +9,10 @@ function Turtle:initialize (x, y, v, length)
 	self.v = v
 	self.length = length
 	self.swimSpr = concatTable({TURTLE[1]}, TURTLE)
-	self.diveSpr = {TURTLE[1], TURTLEDIVE[2], TURTLEDIVE[1], TURTLEDIVE[2], TURTLE[1]}
+	self.diveSpr = {TURTLE[1], TURTLEDIVE[2], TURTLEDIVE[1], TURTLEDIVE[2]}
 	self.currentSprNum = 1
 	self.currentSprs = self.swimSpr
-	self.framesPerDive = 300 + math.random(1200)
+	self.framesPerDive = math.random(2400)
 	self.diving = false
 	self.hasCol = true
 	self.animateSwim = Animate:new (5, self.swimSpr)
@@ -39,7 +39,7 @@ function Turtle:update ()
 		if self.animateDive.counter == self.animateDive.framesPerAni * (#self.animateDive.sprites - 1) then
 			self.diving = false
 			self.hasCol = true
-			self.framesPerDive = 300 + math.random(1200)
+			self.framesPerDive = math.random(2400)
 			self.currentSprNum = 1
 			self.currentSprs = self.swimSpr
 		end

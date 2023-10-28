@@ -30,6 +30,8 @@ WATDEATH = {305, 306, 307, 304}
 LOG = {390, 391, 392}
 TURTLE = {338, 339, 340}
 TURTLEDIVE = {336, 337}
+SNAKEHEAD = {384, 386, 388}
+SNAKETAIL = {385, 387, 389}
 GOAL = {353, 354}
 
 local class = require 'middleclass'
@@ -38,6 +40,7 @@ local Animate = require 'classes/animate'
 local Car = require 'classes/car'
 local Log = require 'classes/log'
 local Turtle = require 'classes/turtle'
+local Snake = require 'classes/snake'
 local Goal = require 'classes/goal'
 local RowFunc = require 'classes/rowFunc'
 local RowPattern = require 'classes/rowPattern'
@@ -82,6 +85,7 @@ watDeath = false
 hasDied = false
 frogLastLoc = {}
 frog = Frog:new ()
+snake = Snake:new (9, 9)
 animateColDeath = Animate:new (20, concatTable({COLDEATH[1]}, COLDEATH))
 animateWatDeath = Animate:new (20, concatTable({WATDEATH[1]}, WATDEATH))
 allRowPatterns = RowPattern:new ()
@@ -98,14 +102,14 @@ function TIC()
 	-- Time Display
 	timeLeft = 30 - ((time() - roundStartTime) / 1000)
 	timeWidth = (timeLeft / 30) * (6 * 8)
-	print("TIME:", 15 * 8, 16 * 8 + 1, 12)
+	print("TIME:", 15 * 8, 16 * 8 + 1, 4)
 	rect(18 * 8, 16 * 8 + 2, timeWidth, 3, 6)
 	-- Points Display
 	print("POINTS:", 16 * 8, 0, 12, 1, 1)
-	print(tostring(points), 16 * 8, 1 * 8, 12, 1, 1)
+	print(tostring(points), 16 * 8, 1 * 8, 2, 1, 1)
 	-- Level Display
 	print("LEVEL:", 6 * 8, 0, 12, 1, 1)
-	print(tostring(level), 6 * 8, 1 * 8, 12, 1, 1)
+	print(tostring(level), 6 * 8, 1 * 8, 2, 1, 1)
 	-- Lives Display
 	for i = 0, lives-1 do
 		spr(FROG[1], LIVESPOS.x + (i * 8), LIVESPOS.y, 0)
@@ -146,10 +150,12 @@ function TIC()
 		allRowPatterns.func:updateObjectRow(allRowPatterns:returnPattern(level%5)[1][i].cars)
 		allRowPatterns.func:updateObjectRow(allRowPatterns:returnPattern(level%5)[2][i].waterObjs)
 	end 
+	snake:update()
 	for i = 1, 5 do 
 		allRowPatterns.func:drawObjectRow(allRowPatterns:returnPattern(level%5)[1][i].cars)
 		allRowPatterns.func:drawObjectRow(allRowPatterns:returnPattern(level%5)[2][i].waterObjs) 
 	end
+	snake:draw()
 	-- Collision Check
 	if not colDeath and not watDeath then frog:drawFrog() end
 	if not NOCOLLISIONS then 
@@ -171,6 +177,13 @@ function TIC()
 				frog.x = frog.x + allRowPatterns:returnPattern(level%5)[2][i].v
 			end
 		end
+		if collide(frog, snake) then
+			colDeath = true
+			hasDied = true
+			frogLastLoc = {frog.x, frog.y}
+			roundStartTime = time()
+			frog:reset()
+		end
 	end 
 	-- Reached Goal
 	if goalRow:checkReached(frog) then 
@@ -190,6 +203,12 @@ function TIC()
 		level = level + 1
 		if level%5 == 1 then
 			allRowPatterns:increaseSpeed()
+		end
+		if level%5 == 1 then
+			snake:deactivate()
+		end
+		if level%5 == 3 then
+			snake:activate()
 		end
 		points = points + 1000
 		goalRow:reset() 
