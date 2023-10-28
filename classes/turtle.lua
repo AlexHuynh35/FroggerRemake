@@ -21,8 +21,8 @@ end
 
 function Turtle:update ()
 	self.x = self.x + self.v
-	if self.x < OFFSCREENLEFT - self.length then self.x = OFFSCREENRIGHT end 
-	if self.x > OFFSCREENRIGHT then self.x = OFFSCREENLEFT - self.length end 
+	if self.x < OFFSCREENLEFT - self.length * 8 then self.x = OFFSCREENRIGHT end 
+	if self.x > OFFSCREENRIGHT then self.x = OFFSCREENLEFT - self.length * 8 end 
 	if not self.diving then
 		self.framesPerDive = self.framesPerDive - 1
 		self.animateSwim:play()

@@ -12,8 +12,8 @@ end
 
 function Log:update ()
 	self.x = self.x + self.v
-	if self.x < OFFSCREENLEFT - self.length then self.x = OFFSCREENRIGHT end 
-	if self.x > OFFSCREENRIGHT then self.x = OFFSCREENLEFT - self.length end 
+	if self.x < OFFSCREENLEFT - self.length * 8 then self.x = OFFSCREENRIGHT end 
+	if self.x > OFFSCREENRIGHT then self.x = OFFSCREENLEFT - self.length * 8 end 
 end 
 
 function Log:fillSprList ()

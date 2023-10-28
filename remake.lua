@@ -32,6 +32,8 @@ TURTLE = {338, 339, 340}
 TURTLEDIVE = {336, 337}
 SNAKEHEAD = {384, 386, 388}
 SNAKETAIL = {385, 387, 389}
+GATORBODY = {368, 369}
+GATORHEAD = {370, 371}
 GOAL = {353, 354}
 
 local class = require 'middleclass'
@@ -41,6 +43,7 @@ local Car = require 'classes/car'
 local Log = require 'classes/log'
 local Turtle = require 'classes/turtle'
 local Snake = require 'classes/snake'
+local Gator = require 'classes/gator'
 local Goal = require 'classes/goal'
 local RowFunc = require 'classes/rowFunc'
 local RowPattern = require 'classes/rowPattern'
@@ -86,6 +89,8 @@ hasDied = false
 frogLastLoc = {}
 frog = Frog:new ()
 snake = Snake:new (9, 9)
+gatorTop = Gator:new (12, 4, .2, 4)
+gatorMid = Gator:new (16, 7, .15, 3)
 animateColDeath = Animate:new (20, concatTable({COLDEATH[1]}, COLDEATH))
 animateWatDeath = Animate:new (20, concatTable({WATDEATH[1]}, WATDEATH))
 allRowPatterns = RowPattern:new ()
@@ -151,11 +156,15 @@ function TIC()
 		allRowPatterns.func:updateObjectRow(allRowPatterns:returnPattern(level%5)[2][i].waterObjs)
 	end 
 	snake:update()
+	gatorTop:update()
+	gatorMid:update()
 	for i = 1, 5 do 
 		allRowPatterns.func:drawObjectRow(allRowPatterns:returnPattern(level%5)[1][i].cars)
 		allRowPatterns.func:drawObjectRow(allRowPatterns:returnPattern(level%5)[2][i].waterObjs) 
 	end
 	snake:draw()
+	gatorTop:draw()
+	gatorMid:draw()
 	-- Collision Check
 	if not colDeath and not watDeath then frog:drawFrog() end
 	if not NOCOLLISIONS then 
@@ -168,11 +177,33 @@ function TIC()
 				frog:reset()
 			end
 			if ((not allRowPatterns.func:rowCollision(frog, allRowPatterns:returnPattern(level%5)[2][i].waterObjs)) and frog.realY == allRowPatterns:returnPattern(level%5)[2][i].y) then 
-				watDeath = true
-				hasDied = true
-				frogLastLoc = {frog.x, frog.y}
-				roundStartTime = time()
-				frog:reset()
+				if collide(frog, gatorTop) then
+					if gatorTop:touchingHead(frog) then
+						colDeath = true
+						hasDied = true
+						frogLastLoc = {frog.x, frog.y}
+						roundStartTime = time()
+						frog:reset()
+					else
+						frog.x = frog.x + gatorTop.v
+					end
+				elseif collide(frog, gatorMid) then
+					if gatorMid:touchingHead(frog) then
+						colDeath = true
+						hasDied = true
+						frogLastLoc = {frog.x, frog.y}
+						roundStartTime = time()
+						frog:reset()
+					else
+						frog.x = frog.x + gatorTop.v
+					end
+				else
+					watDeath = true
+					hasDied = true
+					frogLastLoc = {frog.x, frog.y}
+					roundStartTime = time()
+					frog:reset()
+				end
 			elseif allRowPatterns.func:rowCollision(frog, allRowPatterns:returnPattern(level%5)[2][i].waterObjs) and frog.x > LEFTBOUND and frog.x < RIGHTBOUND then
 				frog.x = frog.x + allRowPatterns:returnPattern(level%5)[2][i].v
 			end
@@ -203,12 +234,20 @@ function TIC()
 		level = level + 1
 		if level%5 == 1 then
 			allRowPatterns:increaseSpeed()
-		end
-		if level%5 == 1 then
+			gatorTop:changeV (allRowPatterns.speed)
+			gatorMid:changeV (allRowPatterns.speed)
 			snake:deactivate()
+			gatorTop:deactivate()
+			gatorMid:deactivate()
+		end
+		if level%5 == 2 then
+			gatorTop:activate()
 		end
 		if level%5 == 3 then
 			snake:activate()
+		end
+		if level%5 == 4 then
+			gatorMid:activate()
 		end
 		points = points + 1000
 		goalRow:reset() 

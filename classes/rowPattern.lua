@@ -45,7 +45,7 @@ function RowPattern:createPatternOne ()
     logRow2 = LogRow:new ({6, 11, 16, 21}, 7, .15, 3)
     logRow3 = LogRow:new ({6, 16}, 6, .3, 6)
     turtleRow4 = TurtleRow:new ({6, 10, 14, 18, 22}, 5, -.25, 2)
-    logRow5 = LogRow:new ({6, 12, 18}, 4, .2, 4)
+    logRow5 = LogRow:new ({6, 13, 20}, 4, .2, 4)
     waterRows = {turtleRow1, logRow2, logRow3, turtleRow4, logRow5}
     return {carRows, waterRows}
 end
@@ -61,7 +61,7 @@ function RowPattern:createPatternTwo ()
     logRow2 = LogRow:new ({6, 11, 16, 21}, 7, .15, 3)
     logRow3 = LogRow:new ({6, 16}, 6, .3, 6)
     turtleRow4 = TurtleRow:new ({6, 10, 14, 18, 22}, 5, -.25, 2)
-    logRow5 = LogRow:new ({6, 12, 18}, 4, .2, 4)
+    logRow5 = LogRow:new ({6, 20}, 4, .2, 4)
     waterRows = {turtleRow1, logRow2, logRow3, turtleRow4, logRow5}
     return {carRows, waterRows}
 end
@@ -77,7 +77,7 @@ function RowPattern:createPatternThree ()
     logRow2 = LogRow:new ({6, 11, 16, 21}, 7, .15, 3)
     logRow3 = LogRow:new ({6, 16}, 6, .3, 6)
     turtleRow4 = TurtleRow:new ({6, 10, 14, 18, 22}, 5, -.25, 2)
-    logRow5 = LogRow:new ({6, 12, 18}, 4, .2, 4)
+    logRow5 = LogRow:new ({6, 20}, 4, .2, 4)
     waterRows = {turtleRow1, logRow2, logRow3, turtleRow4, logRow5}
     return {carRows, waterRows}
 end
@@ -90,10 +90,10 @@ function RowPattern:createPatternFour ()
     carRow5 = CarRow:new ({8, 15, 22}, 10, -.15, Car3)
     carRows = {carRow1, carRow2, carRow3, carRow4, carRow5}
     turtleRow1 = TurtleRow:new ({6, 11, 16, 21}, 8, -.25, 3)
-    logRow2 = LogRow:new ({6, 11, 16, 21}, 7, .15, 3)
+    logRow2 = LogRow:new ({6, 11, 21}, 7, .15, 3)
     logRow3 = LogRow:new ({6, 16}, 6, .3, 6)
     turtleRow4 = TurtleRow:new ({6, 10, 14, 18, 22}, 5, -.25, 2)
-    logRow5 = LogRow:new ({6, 12, 18}, 4, .2, 4)
+    logRow5 = LogRow:new ({6, 20}, 4, .2, 4)
     waterRows = {turtleRow1, logRow2, logRow3, turtleRow4, logRow5}
     return {carRows, waterRows}
 end
@@ -106,10 +106,10 @@ function RowPattern:createPatternFive ()
     carRow5 = CarRow:new ({8, 15, 22}, 10, -.15, Car3)
     carRows = {carRow1, carRow2, carRow3, carRow4, carRow5}
     turtleRow1 = TurtleRow:new ({6, 11, 16, 21}, 8, -.25, 3)
-    logRow2 = LogRow:new ({6, 11, 16, 21}, 7, .15, 3)
+    logRow2 = LogRow:new ({6, 11, 21}, 7, .15, 3)
     logRow3 = LogRow:new ({6, 16}, 6, .3, 6)
     turtleRow4 = TurtleRow:new ({6, 10, 14, 18, 22}, 5, -.25, 2)
-    logRow5 = LogRow:new ({6, 12, 18}, 4, .2, 4)
+    logRow5 = LogRow:new ({6, 20}, 4, .2, 4)
     waterRows = {turtleRow1, logRow2, logRow3, turtleRow4, logRow5}
     return {carRows, waterRows}
 end
