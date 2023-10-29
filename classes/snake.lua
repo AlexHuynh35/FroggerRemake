@@ -4,7 +4,7 @@ local Animate = require 'classes/animate'
 local Snake = class('Snake')
 
 function Snake:initialize (x, y) 
-	self.x = x
+	self.x = x * 8
     self.startX = x * 8
 	self.y = y * 8
 	self.v = 0.3
