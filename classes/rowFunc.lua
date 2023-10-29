@@ -32,4 +32,10 @@ function RowFunc:increaseRowV (objectList, speed)
 	end
 end
 
+function RowFunc:resetPositions (objectList)
+	for index, object in pairs(objectList) do 
+		object:resetPosition() 
+	end
+end 
+
 return RowFunc

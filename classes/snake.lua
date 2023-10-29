@@ -5,7 +5,7 @@ local Snake = class('Snake')
 
 function Snake:initialize (x, y) 
 	self.x = 0
-    self.lastX = x * 8
+    self.startX = x * 8
 	self.y = y * 8
 	self.v = 0.3
     self.direction = 1
@@ -41,13 +41,15 @@ end
 
 function Snake:activate ()
     self.active = true
-    self.x = self.lastX
 end
 
 function Snake:deactivate ()
     self.active = false
-    self.lastX = self.x
     self.x = 0
+end
+
+function Snake:resetPosition ()
+    self.x = self.startX
 end
 
 return Snake

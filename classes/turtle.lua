@@ -17,6 +17,7 @@ function Turtle:initialize (x, y, v, length)
 	self.hasCol = true
 	self.animateSwim = Animate:new (5, self.swimSpr)
 	self.animateDive = Animate:new (60, self.diveSpr)
+	self.startX = x * 8
 end
 
 function Turtle:update ()
@@ -56,5 +57,10 @@ end
 function Turtle:increaseV (speed)
 	self.v = self.v * speed
 end
+
+function Turtle:resetPosition ()
+	self.x = self.startX
+end
+
 
 return Turtle

@@ -4,7 +4,6 @@ local Gator = class('Gator')
 
 function Gator:initialize (x, y, v, logLength) 
 	self.x = 0
-    self.lastX = x * 8
 	self.y = y * 8
 	self.v = v
     self.length = 3
@@ -13,6 +12,7 @@ function Gator:initialize (x, y, v, logLength)
 	self.body = GATORBODY
     self.head = concatTable({GATORHEAD[1]}, GATORHEAD)
     self.animateHead = Animate:new (120, self.head)
+    self.startX = x * 8
 end
 
 function Gator:update ()
@@ -37,13 +37,12 @@ function Gator:changeV (speed)
 end
 
 function Gator:activate ()
+    self.x = self.startX
     self.active = true
-    self.x = self.lastX
 end
 
 function Gator:deactivate ()
     self.active = false
-    self.lastX = self.x
     self.x = 0
 end
 
@@ -51,6 +50,10 @@ function Gator:touchingHead (frog)
     local d = (frog.x - (self.x + 20))^2 + (frog.realY - self.y)^2
 	if d < 64 then return true end
 	return false
+end
+
+function Gator:resetPosition ()
+	self.x = self.startX
 end
 
 return Gator

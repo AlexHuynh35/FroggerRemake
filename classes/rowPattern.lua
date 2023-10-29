@@ -34,6 +34,13 @@ function RowPattern:returnPattern (n)
     if n == 0 then return self.pattern5 end
 end
 
+function RowPattern:resetPattern (n)
+    for j = 1, 5 do
+        self.func:resetPositions(self:returnPattern(n%5)[1][j].cars)
+        self.func:resetPositions(self:returnPattern(n%5)[2][j].waterObjs)
+    end
+end
+
 function RowPattern:createPatternOne ()
     carRow1 = CarRow:new ({7, 15}, 14, -.2, Car1)
     carRow2 = CarRow:new ({10, 20.5}, 13, .2, Car2)

@@ -8,6 +8,7 @@ function Car:initialize (x, y, v, sprites)
 	self.hasCol = true
 	self.sprites = sprites
 	self.length = #sprites
+	self.startX = x * 8
 end 
 
 function Car:update () 
@@ -26,6 +27,10 @@ end
 
 function Car:increaseV (speed)
 	self.v = self.v * speed
+end
+
+function Car:resetPosition ()
+	self.x = self.startX
 end
 
 return Car

@@ -248,6 +248,10 @@ function TIC()
 	allRowPatterns.func:drawObjectRow(goalRow.goalObjs)
 	-- Finished Level
 	if goalsCompleted == 5 then 
+		allRowPatterns:resetPattern(level)
+		gatorTop:resetPosition()
+		gatorMid:resetPosition()
+		snake:resetPosition()
 		level = level + 1
 		if level%5 == 1 then
 			allRowPatterns:increaseSpeed()

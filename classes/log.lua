@@ -8,6 +8,7 @@ function Log:initialize (x, y, v, length)
 	self.length = length
 	self.hasCol = true
 	self.sprites = self:fillSprList()
+	self.startX = x * 8
 end
 
 function Log:update ()
@@ -36,6 +37,10 @@ end
 
 function Log:increaseV (speed)
 	self.v = self.v * speed
+end
+
+function Log:resetPosition ()
+	self.x = self.startX
 end
 
 return Log
