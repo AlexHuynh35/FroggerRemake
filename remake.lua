@@ -10,6 +10,9 @@ t=0
 x=96
 y=24
 CONTROL = {up = 0, down = 1, left = 2, right = 3}
+MAXLIVES = 5
+
+--Position Variables
 XSTART = 15 * 8
 YSTART = 15 * 8
 LEFTBOUND = 6 * 8
@@ -19,6 +22,7 @@ OFFSCREENLEFT = 32
 OFFSCREENRIGHT = 192
 LIVESPOS = {x = 6 * 8, y = 16 * 8}
 
+--Sprite Variables
 FROG = {256, 257, 258}
 Car1 = {259}
 Car2 = {260}
@@ -36,6 +40,12 @@ GATORBODY = {368, 369}
 GATORHEAD = {370, 371}
 GOAL = {353, 354}
 
+--SFX Variables 
+FROGSFX = 0
+GOALSFX = 1
+DEATHSFX = 2
+
+--Imports
 local class = require 'middleclass'
 local Frog = require 'classes/frog'
 local Animate = require 'classes/animate'
@@ -56,6 +66,7 @@ local GoalRow = require 'classes/goalRow'
 local NOCOLLISIONS = false
 local INFLIVES = false
 
+--Helper functions
 function initBorder ()
 	for i=0,5 do
 		for j=0,16 do
@@ -84,6 +95,7 @@ function collide (frog, object)
 	return false
 end
 
+--Game State + Objects 
 colDeath = false
 watDeath = false
 hasDied = false
@@ -98,7 +110,7 @@ allRowPatterns = RowPattern:new ()
 goalRow = GoalRow:new ({56, 88, 120, 152, 176}, 24)
 goalsCompleted = 0
 level = 1
-lives = 3
+lives = MAXLIVES
 roundStartTime = 0
 points = 0
 
@@ -125,6 +137,7 @@ function TIC()
 		if not INFLIVES then
 			lives = lives - 1
 		end
+		sfx(DEATHSFX, 20, 12, 0, 6)
 		hasDied = false 
 	end 
 	if colDeath then
@@ -225,6 +238,7 @@ function TIC()
 		points = points + 10 * math.floor(timeLeft / .5)
 		points = points + 50
 		roundStartTime = time()
+		sfx(GOALSFX, 40, 15, 0, 8)
 	elseif frog.realY <= 24 then 
 		colDeath = true 
 		hasDied = true
@@ -254,7 +268,7 @@ function TIC()
 		end
 		points = points + 1000
 		goalRow:reset() 
-		if lives < 4 then
+		if lives < MAXLIVES then
 			lives = lives + 1
 		end
 		goalsCompleted = 0
@@ -487,10 +501,13 @@ end
 -- 000:00000000ffffffff00000000ffffffff
 -- 001:0123456789abcdeffedcba9876543210
 -- 002:0123456789abcdef0123456789abcdef
+-- 004:77770771717377766666666666666777
 -- </WAVES>
 
 -- <SFX>
--- 000:000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000304000000000
+-- 000:010301030103010301030103011301330143016301730173017301730173017301730173017301730173017301730173017301730173017301730173401000000000
+-- 001:023302330233023302330233024302530263027302830293029302a302a302a302a302a302a302a302a302a302a302a302a302a302b302b302b302b3300000000000
+-- 002:000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000200000000000
 -- </SFX>
 
 -- <TRACKS>

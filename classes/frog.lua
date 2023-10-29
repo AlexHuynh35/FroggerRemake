@@ -38,15 +38,18 @@ function Frog:update ()
 		if btnp(CONTROL.left) then
 			self.moving = true
 			self.direction = 3
+			sfx(FROGSFX, 60, 10, 0, 8)
 		end
 		if btnp(CONTROL.right) then
 			self.moving = true
 			self.direction = 1
+			sfx(FROGSFX, 60, 10, 0, 8)
 		end
 		if btnp(CONTROL.up) then
 			self.moving = true
 			self.direction = 0
 			self.realY = self.realY - 8
+			sfx(FROGSFX, 60, 10, 0, 8)
 			return true 
 		end
 		if btnp(CONTROL.down) then
@@ -55,6 +58,7 @@ function Frog:update ()
 			if self.y < LOWERBOUND then
 				self.realY = self.realY + 8
 			end
+			sfx(FROGSFX, 60, 10, 0, 8)
 		end
 	end
 	return false 
