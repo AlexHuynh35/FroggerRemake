@@ -4,7 +4,7 @@ local Animate = require 'classes/animate'
 local Snake = class('Snake')
 
 function Snake:initialize (x, y) 
-	self.x = 0
+	self.x = x
     self.startX = x * 8
 	self.y = y * 8
 	self.v = 0.3
@@ -45,11 +45,14 @@ end
 
 function Snake:deactivate ()
     self.active = false
-    self.x = 0
 end
 
 function Snake:resetPosition ()
     self.x = self.startX
 end
+
+function Snake:isActive ()
+    return self.active
+end 
 
 return Snake

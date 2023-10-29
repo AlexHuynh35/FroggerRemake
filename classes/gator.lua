@@ -43,7 +43,6 @@ end
 
 function Gator:deactivate ()
     self.active = false
-    self.x = 0
 end
 
 function Gator:touchingHead (frog)
@@ -55,5 +54,9 @@ end
 function Gator:resetPosition ()
 	self.x = self.startX
 end
+
+function Gator:isActive ()
+    return self.active
+end 
 
 return Gator

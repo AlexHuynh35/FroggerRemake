@@ -193,7 +193,7 @@ function TIC()
 				frog:reset()
 			end
 			if ((not allRowPatterns.func:rowCollision(frog, allRowPatterns:returnPattern(level%5)[2][i].waterObjs)) and frog.realY == allRowPatterns:returnPattern(level%5)[2][i].y) then 
-				if collide(frog, gatorTop) then
+				if gatorTop:isActive() and collide(frog, gatorTop) then
 					if gatorTop:touchingHead(frog) then
 						colDeath = true
 						hasDied = true
@@ -203,8 +203,8 @@ function TIC()
 					else
 						frog.x = frog.x + gatorTop.v
 					end
-				elseif collide(frog, gatorMid) then
-					if gatorMid:touchingHead(frog) then
+				elseif gatorMid:isActive() and collide(frog, gatorMid) then
+					if  gatorMid:touchingHead(frog) then
 						colDeath = true
 						hasDied = true
 						frogLastLoc = {frog.x, frog.y}
@@ -224,7 +224,7 @@ function TIC()
 				frog.x = frog.x + allRowPatterns:returnPattern(level%5)[2][i].v
 			end
 		end
-		if collide(frog, snake) then
+		if snake:isActive() and collide(frog, snake) then
 			colDeath = true
 			hasDied = true
 			frogLastLoc = {frog.x, frog.y}
@@ -255,8 +255,8 @@ function TIC()
 		level = level + 1
 		if level%5 == 1 then
 			allRowPatterns:increaseSpeed()
-			gatorTop:changeV (allRowPatterns.speed)
-			gatorMid:changeV (allRowPatterns.speed)
+			gatorTop:changeV (allRowPatterns.speedMultiplier)
+			gatorMid:changeV (allRowPatterns.speedMultiplier)
 			snake:deactivate()
 			gatorTop:deactivate()
 			gatorMid:deactivate()

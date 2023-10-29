@@ -6,7 +6,7 @@ local RowFunc = require 'classes/rowFunc'
 local RowPattern = class('RowPattern')
 
 function RowPattern:initialize ()
-    self.speed = 1
+    self.speedMultiplier = 1.5
     self.func = RowFunc:new ()
     self.pattern1 = self:createPatternOne ()
     self.pattern2 = self:createPatternTwo ()
@@ -16,12 +16,11 @@ function RowPattern:initialize ()
 end
 
 function RowPattern:increaseSpeed ()
-    self.speed = self.speed + .5
     for i = 1, 5 do
         for j = 1, 5 do
-            self.func:increaseRowV(self:returnPattern(i%5)[1][j].cars, self.speed)
-            self:returnPattern(i%5)[2][j].v = self:returnPattern(i%5)[2][j].v * self.speed
-            self.func:increaseRowV(self:returnPattern(i%5)[2][j].waterObjs, self.speed)
+            self.func:increaseRowV(self:returnPattern(i%5)[1][j].cars, self.speedMultiplier)
+            self:returnPattern(i%5)[2][j].v = self:returnPattern(i%5)[2][j].v * self.speedMultiplier
+            self.func:increaseRowV(self:returnPattern(i%5)[2][j].waterObjs, self.speedMultiplier)
         end
     end
 end
