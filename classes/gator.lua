@@ -48,7 +48,7 @@ function Gator:deactivate ()
 end
 
 function Gator:touchingHead (frog)
-    local d = (frog.x - (self.x + 16))^2 + (frog.realY - self.y)^2
+    local d = (frog.x - (self.x + 20))^2 + (frog.realY - self.y)^2
 	if d < 64 then return true end
 	return false
 end

@@ -54,6 +54,7 @@ local GoalRow = require 'classes/goalRow'
 
 --debug variables
 local NOCOLLISIONS = false
+local INFLIVES = false
 
 function initBorder ()
 	for i=0,5 do
@@ -121,7 +122,9 @@ function TIC()
 	end
 	-- Death
 	if hasDied then 
-		lives = lives - 1
+		if not INFLIVES then
+			lives = lives - 1
+		end
 		hasDied = false 
 	end 
 	if colDeath then
