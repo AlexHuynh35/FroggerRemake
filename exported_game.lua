@@ -39,6 +39,7 @@ function Car:initialize (x, y, v, sprites)
 	self.hasCol = true
 	self.sprites = sprites
 	self.length = #sprites
+	self.startX = x * 8
 end 
 
 function Car:update () 
@@ -57,6 +58,10 @@ end
 
 function Car:increaseV (speed)
 	self.v = self.v * speed
+end
+
+function Car:resetPosition ()
+	self.x = self.startX
 end
 
 return Car
@@ -127,15 +132,18 @@ function Frog:update ()
 		if btnp(CONTROL.left) then
 			self.moving = true
 			self.direction = 3
+			sfx(FROGSFX, 60, 10, 0, 8)
 		end
 		if btnp(CONTROL.right) then
 			self.moving = true
 			self.direction = 1
+			sfx(FROGSFX, 60, 10, 0, 8)
 		end
 		if btnp(CONTROL.up) then
 			self.moving = true
 			self.direction = 0
 			self.realY = self.realY - 8
+			sfx(FROGSFX, 60, 10, 0, 8)
 			return true 
 		end
 		if btnp(CONTROL.down) then
@@ -144,6 +152,7 @@ function Frog:update ()
 			if self.y < LOWERBOUND then
 				self.realY = self.realY + 8
 			end
+			sfx(FROGSFX, 60, 10, 0, 8)
 		end
 	end
 	return false 
@@ -174,7 +183,6 @@ local Gator = class('Gator')
 
 function Gator:initialize (x, y, v, logLength) 
 	self.x = 0
-    self.lastX = x * 8
 	self.y = y * 8
 	self.v = v
     self.length = 3
@@ -183,6 +191,7 @@ function Gator:initialize (x, y, v, logLength)
 	self.body = GATORBODY
     self.head = concatTable({GATORHEAD[1]}, GATORHEAD)
     self.animateHead = Animate:new (120, self.head)
+    self.startX = x * 8
 end
 
 function Gator:update ()
@@ -207,21 +216,27 @@ function Gator:changeV (speed)
 end
 
 function Gator:activate ()
+    self.x = self.startX
     self.active = true
-    self.x = self.lastX
 end
 
 function Gator:deactivate ()
     self.active = false
-    self.lastX = self.x
-    self.x = 0
 end
 
 function Gator:touchingHead (frog)
-    local d = (frog.x - (self.x + 16))^2 + (frog.realY - self.y)^2
+    local d = (frog.x - (self.x + 20))^2 + (frog.realY - self.y)^2
 	if d < 64 then return true end
 	return false
 end
+
+function Gator:resetPosition ()
+	self.x = self.startX
+end
+
+function Gator:isActive ()
+    return self.active
+end 
 
 return Gator
 end
@@ -310,6 +325,7 @@ function Log:initialize (x, y, v, length)
 	self.length = length
 	self.hasCol = true
 	self.sprites = self:fillSprList()
+	self.startX = x * 8
 end
 
 function Log:update ()
@@ -338,6 +354,10 @@ end
 
 function Log:increaseV (speed)
 	self.v = self.v * speed
+end
+
+function Log:resetPosition ()
+	self.x = self.startX
 end
 
 return Log
@@ -404,6 +424,12 @@ function RowFunc:increaseRowV (objectList, speed)
 	end
 end
 
+function RowFunc:resetPositions (objectList)
+	for index, object in pairs(objectList) do 
+		object:resetPosition() 
+	end
+end 
+
 return RowFunc
 end
 end
@@ -419,7 +445,7 @@ local RowFunc = require 'classes/rowFunc'
 local RowPattern = class('RowPattern')
 
 function RowPattern:initialize ()
-    self.speed = 1
+    self.speedMultiplier = 1.5
     self.func = RowFunc:new ()
     self.pattern1 = self:createPatternOne ()
     self.pattern2 = self:createPatternTwo ()
@@ -429,12 +455,11 @@ function RowPattern:initialize ()
 end
 
 function RowPattern:increaseSpeed ()
-    self.speed = self.speed + .5
     for i = 1, 5 do
         for j = 1, 5 do
-            self.func:increaseRowV(self:returnPattern(i%5)[1][j].cars, self.speed)
-            self:returnPattern(i%5)[2][j].v = self:returnPattern(i%5)[2][j].v * self.speed
-            self.func:increaseRowV(self:returnPattern(i%5)[2][j].waterObjs, self.speed)
+            self.func:increaseRowV(self:returnPattern(i%5)[1][j].cars, self.speedMultiplier)
+            self:returnPattern(i%5)[2][j].v = self:returnPattern(i%5)[2][j].v * self.speedMultiplier
+            self.func:increaseRowV(self:returnPattern(i%5)[2][j].waterObjs, self.speedMultiplier)
         end
     end
 end
@@ -445,6 +470,13 @@ function RowPattern:returnPattern (n)
     if n == 3 then return self.pattern3 end
     if n == 4 then return self.pattern4 end
     if n == 0 then return self.pattern5 end
+end
+
+function RowPattern:resetPattern (n)
+    for j = 1, 5 do
+        self.func:resetPositions(self:returnPattern(n%5)[1][j].cars)
+        self.func:resetPositions(self:returnPattern(n%5)[2][j].waterObjs)
+    end
 end
 
 function RowPattern:createPatternOne ()
@@ -540,8 +572,8 @@ local Animate = require 'classes/animate'
 local Snake = class('Snake')
 
 function Snake:initialize (x, y) 
-	self.x = 0
-    self.lastX = x * 8
+	self.x = x * 8
+    self.startX = x * 8
 	self.y = y * 8
 	self.v = 0.3
     self.direction = 1
@@ -577,14 +609,19 @@ end
 
 function Snake:activate ()
     self.active = true
-    self.x = self.lastX
 end
 
 function Snake:deactivate ()
     self.active = false
-    self.lastX = self.x
-    self.x = 0
 end
+
+function Snake:resetPosition ()
+    self.x = self.startX
+end
+
+function Snake:isActive ()
+    return self.active
+end 
 
 return Snake
 end
@@ -612,6 +649,7 @@ function Turtle:initialize (x, y, v, length)
 	self.hasCol = true
 	self.animateSwim = Animate:new (5, self.swimSpr)
 	self.animateDive = Animate:new (60, self.diveSpr)
+	self.startX = x * 8
 end
 
 function Turtle:update ()
@@ -651,6 +689,11 @@ end
 function Turtle:increaseV (speed)
 	self.v = self.v * speed
 end
+
+function Turtle:resetPosition ()
+	self.x = self.startX
+end
+
 
 return Turtle
 end
@@ -890,6 +933,9 @@ t=0
 x=96
 y=24
 CONTROL = {up = 0, down = 1, left = 2, right = 3}
+MAXLIVES = 5
+
+--Position Variables
 XSTART = 15 * 8
 YSTART = 15 * 8
 LEFTBOUND = 6 * 8
@@ -899,6 +945,7 @@ OFFSCREENLEFT = 32
 OFFSCREENRIGHT = 192
 LIVESPOS = {x = 6 * 8, y = 16 * 8}
 
+--Sprite Variables
 FROG = {256, 257, 258}
 Car1 = {259}
 Car2 = {260}
@@ -916,6 +963,12 @@ GATORBODY = {368, 369}
 GATORHEAD = {370, 371}
 GOAL = {353, 354}
 
+--SFX Variables 
+FROGSFX = 0
+GOALSFX = 1
+DEATHSFX = 2
+
+--Imports
 local class = require 'middleclass'
 local Frog = require 'classes/frog'
 local Animate = require 'classes/animate'
@@ -934,7 +987,9 @@ local GoalRow = require 'classes/goalRow'
 
 --debug variables
 local NOCOLLISIONS = false
+local INFLIVES = false
 
+--Helper functions
 function initBorder ()
 	for i=0,5 do
 		for j=0,16 do
@@ -963,6 +1018,7 @@ function collide (frog, object)
 	return false
 end
 
+--Game State + Objects 
 colDeath = false
 watDeath = false
 hasDied = false
@@ -977,7 +1033,7 @@ allRowPatterns = RowPattern:new ()
 goalRow = GoalRow:new ({56, 88, 120, 152, 176}, 24)
 goalsCompleted = 0
 level = 1
-lives = 3
+lives = MAXLIVES
 roundStartTime = 0
 points = 0
 
@@ -1001,7 +1057,10 @@ function TIC()
 	end
 	-- Death
 	if hasDied then 
-		lives = lives - 1
+		if not INFLIVES then
+			lives = lives - 1
+		end
+		sfx(DEATHSFX, 20, 12, 0, 6)
 		hasDied = false 
 	end 
 	if colDeath then
@@ -1057,7 +1116,7 @@ function TIC()
 				frog:reset()
 			end
 			if ((not allRowPatterns.func:rowCollision(frog, allRowPatterns:returnPattern(level%5)[2][i].waterObjs)) and frog.realY == allRowPatterns:returnPattern(level%5)[2][i].y) then 
-				if collide(frog, gatorTop) then
+				if gatorTop:isActive() and collide(frog, gatorTop) then
 					if gatorTop:touchingHead(frog) then
 						colDeath = true
 						hasDied = true
@@ -1067,8 +1126,8 @@ function TIC()
 					else
 						frog.x = frog.x + gatorTop.v
 					end
-				elseif collide(frog, gatorMid) then
-					if gatorMid:touchingHead(frog) then
+				elseif gatorMid:isActive() and collide(frog, gatorMid) then
+					if  gatorMid:touchingHead(frog) then
 						colDeath = true
 						hasDied = true
 						frogLastLoc = {frog.x, frog.y}
@@ -1088,7 +1147,7 @@ function TIC()
 				frog.x = frog.x + allRowPatterns:returnPattern(level%5)[2][i].v
 			end
 		end
-		if collide(frog, snake) then
+		if snake:isActive() and collide(frog, snake) then
 			colDeath = true
 			hasDied = true
 			frogLastLoc = {frog.x, frog.y}
@@ -1102,6 +1161,7 @@ function TIC()
 		points = points + 10 * math.floor(timeLeft / .5)
 		points = points + 50
 		roundStartTime = time()
+		sfx(GOALSFX, 40, 15, 0, 8)
 	elseif frog.realY <= 24 then 
 		colDeath = true 
 		hasDied = true
@@ -1111,11 +1171,15 @@ function TIC()
 	allRowPatterns.func:drawObjectRow(goalRow.goalObjs)
 	-- Finished Level
 	if goalsCompleted == 5 then 
+		allRowPatterns:resetPattern(level)
+		gatorTop:resetPosition()
+		gatorMid:resetPosition()
+		snake:resetPosition()
 		level = level + 1
 		if level%5 == 1 then
 			allRowPatterns:increaseSpeed()
-			gatorTop:changeV (allRowPatterns.speed)
-			gatorMid:changeV (allRowPatterns.speed)
+			gatorTop:changeV (allRowPatterns.speedMultiplier)
+			gatorMid:changeV (allRowPatterns.speedMultiplier)
 			snake:deactivate()
 			gatorTop:deactivate()
 			gatorMid:deactivate()
@@ -1131,7 +1195,7 @@ function TIC()
 		end
 		points = points + 1000
 		goalRow:reset() 
-		if lives < 4 then
+		if lives < MAXLIVES then
 			lives = lives + 1
 		end
 		goalsCompleted = 0
@@ -1364,10 +1428,13 @@ end
 -- 000:00000000ffffffff00000000ffffffff
 -- 001:0123456789abcdeffedcba9876543210
 -- 002:0123456789abcdef0123456789abcdef
+-- 004:77770771717377766666666666666777
 -- </WAVES>
 
 -- <SFX>
--- 000:000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000304000000000
+-- 000:010301030103010301030103011301330143016301730173017301730173017301730173017301730173017301730173017301730173017301730173401000000000
+-- 001:023302330233023302330233024302530263027302830293029302a302a302a302a302a302a302a302a302a302a302a302a302a302b302b302b302b3300000000000
+-- 002:000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000200000000000
 -- </SFX>
 
 -- <TRACKS>
